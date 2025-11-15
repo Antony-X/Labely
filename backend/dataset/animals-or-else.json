@@ -1,0 +1,540 @@
+{
+    "dataset_name": "animals-or-else",
+    "categories": [
+        {
+            "label": "animal",
+            "value": 0
+        },
+        {
+            "label": "other",
+            "value": 1
+        }
+    ],
+    "data": [
+        {
+            "id": 0,
+            "filename": "a26e6ded162b46a4a3399ac1e160fc72.png",
+            "category": -1
+        },
+        {
+            "id": 1,
+            "filename": "4c17335106284729a4d98e9b0c2904c3.png",
+            "category": -1
+        },
+        {
+            "id": 2,
+            "filename": "3244da53b6ed416a8788dc122e738b65.png",
+            "category": -1
+        },
+        {
+            "id": 3,
+            "filename": "ccf54ad7dcdc48fcaf06a8e2187ee786.png",
+            "category": -1
+        },
+        {
+            "id": 4,
+            "filename": "71d5d2b8188541059ebf02323a971908.png",
+            "category": -1
+        },
+        {
+            "id": 5,
+            "filename": "b09b48b429824c83b2398cffe63987f5.png",
+            "category": -1
+        },
+        {
+            "id": 6,
+            "filename": "0822670e8d134fb2aa474f0f86d39203.png",
+            "category": -1
+        },
+        {
+            "id": 7,
+            "filename": "d6fcd83edddc472db12326f37f4ea6ed.png",
+            "category": -1
+        },
+        {
+            "id": 8,
+            "filename": "946b75af32954d50b02474f9379bdf4c.png",
+            "category": -1
+        },
+        {
+            "id": 9,
+            "filename": "d9453369cdbe40e79f72205f48c507c7.png",
+            "category": -1
+        },
+        {
+            "id": 10,
+            "filename": "4769300550f1431bbed2367868a68b90.png",
+            "category": -1
+        },
+        {
+            "id": 11,
+            "filename": "86d9713957b447e88d2295f001c81113.png",
+            "category": -1
+        },
+        {
+            "id": 12,
+            "filename": "590516d3570a40f28eb10be509816019.png",
+            "category": -1
+        },
+        {
+            "id": 13,
+            "filename": "7a96b7e70e9a40d7af8484be2cf21afd.png",
+            "category": -1
+        },
+        {
+            "id": 14,
+            "filename": "93b2cc1b9ca04323ac36c8287024d18c.png",
+            "category": -1
+        },
+        {
+            "id": 15,
+            "filename": "0b3582dccd4e44639f53dfb89d97b3d0.png",
+            "category": -1
+        },
+        {
+            "id": 16,
+            "filename": "a9ce69066fda4e809bf3c81c49563413.png",
+            "category": -1
+        },
+        {
+            "id": 17,
+            "filename": "91101324431e405aa1925c820dec4bc5.png",
+            "category": -1
+        },
+        {
+            "id": 18,
+            "filename": "984403de8cae408c91a0ee10e8505de0.png",
+            "category": -1
+        },
+        {
+            "id": 19,
+            "filename": "61c08f85bdf846eebbcd09d5681b5d4e.png",
+            "category": -1
+        },
+        {
+            "id": 20,
+            "filename": "13a86da7ee5b4016912b775c81ac4f72.png",
+            "category": -1
+        },
+        {
+            "id": 21,
+            "filename": "e716440c05834d70b7be81ba0d616d43.png",
+            "category": -1
+        },
+        {
+            "id": 22,
+            "filename": "cf373f073afe40e9bb7c07870134d058.png",
+            "category": -1
+        },
+        {
+            "id": 23,
+            "filename": "36b6f3992570434a961031731df85581.png",
+            "category": -1
+        },
+        {
+            "id": 24,
+            "filename": "54fd5fd1f5a14f29bf860a59d5e9c3d0.png",
+            "category": -1
+        },
+        {
+            "id": 25,
+            "filename": "c4cd8b3da7944a4f99d10afa4df23524.png",
+            "category": -1
+        },
+        {
+            "id": 26,
+            "filename": "ea4160ee813d4a67a4b0d4b2b29f8b4b.png",
+            "category": -1
+        },
+        {
+            "id": 27,
+            "filename": "6450fe39cb294b1d8616626258a78183.png",
+            "category": -1
+        },
+        {
+            "id": 28,
+            "filename": "80f1eefd513a4c3d85a2333f11d5607e.png",
+            "category": -1
+        },
+        {
+            "id": 29,
+            "filename": "13552f938d184c288caa50e87a06e656.png",
+            "category": -1
+        },
+        {
+            "id": 30,
+            "filename": "f26fb0139fe84cbdb464b321c9536201.png",
+            "category": -1
+        },
+        {
+            "id": 31,
+            "filename": "b0be912ee2a042d78f36c0fe7f920044.png",
+            "category": -1
+        },
+        {
+            "id": 32,
+            "filename": "f21e3e357bd04983954c0e6cdd9beee1.png",
+            "category": -1
+        },
+        {
+            "id": 33,
+            "filename": "edc360bf256d48a98134269f5cd72714.png",
+            "category": -1
+        },
+        {
+            "id": 34,
+            "filename": "052db477cf0d456b92f166a1b3b9a881.png",
+            "category": -1
+        },
+        {
+            "id": 35,
+            "filename": "5c14c2c3f2754de9b8595d53f514b884.png",
+            "category": -1
+        },
+        {
+            "id": 36,
+            "filename": "440fce9c99d74e0b9ec036b1e3a1af2d.png",
+            "category": -1
+        },
+        {
+            "id": 37,
+            "filename": "f25a78b884e942bba8600eecca8b6f8e.png",
+            "category": -1
+        },
+        {
+            "id": 38,
+            "filename": "837b217551d048beacb09765f1418e98.png",
+            "category": -1
+        },
+        {
+            "id": 39,
+            "filename": "7bdf2b69438842898eaea43975a4a68c.png",
+            "category": -1
+        },
+        {
+            "id": 40,
+            "filename": "3b52e0226fdc4863a9b1ad3be9d754a3.png",
+            "category": -1
+        },
+        {
+            "id": 41,
+            "filename": "662f92d45c774b4f97a4b44aaeb8bcde.png",
+            "category": -1
+        },
+        {
+            "id": 42,
+            "filename": "8be9732febe3465581429528bf2d0b8c.png",
+            "category": -1
+        },
+        {
+            "id": 43,
+            "filename": "0e46488146054468b74e82d34dc6fee4.png",
+            "category": -1
+        },
+        {
+            "id": 44,
+            "filename": "4b75a63e81e34645a82b536d492c8640.png",
+            "category": -1
+        },
+        {
+            "id": 45,
+            "filename": "2062026205734292b648381201daf58a.png",
+            "category": -1
+        },
+        {
+            "id": 46,
+            "filename": "df8fb481519648dfac057c4e12abd43b.png",
+            "category": -1
+        },
+        {
+            "id": 47,
+            "filename": "26468a051eec4d23bd77370fe494c1a0.png",
+            "category": -1
+        },
+        {
+            "id": 48,
+            "filename": "1caf318f9dd749a8bbafa4afd1836b5b.png",
+            "category": -1
+        },
+        {
+            "id": 49,
+            "filename": "8402a17b0d2c4e598d4ea4c4799fcf11.png",
+            "category": -1
+        },
+        {
+            "id": 50,
+            "filename": "a00bf008893c48bab30769dd2cc2977b.png",
+            "category": -1
+        },
+        {
+            "id": 51,
+            "filename": "2684853b6c6e46bda56f7448ac4d12ae.png",
+            "category": -1
+        },
+        {
+            "id": 52,
+            "filename": "8b7388d8e0604d0ba89d389c1337b35e.png",
+            "category": -1
+        },
+        {
+            "id": 53,
+            "filename": "0ff1260040d54ed09803eee76bb043fa.png",
+            "category": -1
+        },
+        {
+            "id": 54,
+            "filename": "d1e8789e26b4400fb91e5e1fcb735548.png",
+            "category": -1
+        },
+        {
+            "id": 55,
+            "filename": "3418df549a50499aab3fce0c5422422f.png",
+            "category": -1
+        },
+        {
+            "id": 56,
+            "filename": "3aa143c9adb443458a0e9052ef678a8d.png",
+            "category": -1
+        },
+        {
+            "id": 57,
+            "filename": "bbac2ac1036249dcbc84b483665f9aef.png",
+            "category": -1
+        },
+        {
+            "id": 58,
+            "filename": "490c07be94024420af51b6ea6fc9224f.png",
+            "category": -1
+        },
+        {
+            "id": 59,
+            "filename": "35a00014d4554239b65ee9a46213b253.png",
+            "category": -1
+        },
+        {
+            "id": 60,
+            "filename": "acafbf4670734031a2cf6610fa34e1e8.png",
+            "category": -1
+        },
+        {
+            "id": 61,
+            "filename": "a4652220dc5a46c3a8b99193b1a5823f.png",
+            "category": -1
+        },
+        {
+            "id": 62,
+            "filename": "23a1474598314209bf8c2c40ccbc5192.png",
+            "category": -1
+        },
+        {
+            "id": 63,
+            "filename": "759368826e2d469bb8cb633697585cb0.png",
+            "category": -1
+        },
+        {
+            "id": 64,
+            "filename": "2a10b07bef44480fb5edeb22b8413f60.png",
+            "category": -1
+        },
+        {
+            "id": 65,
+            "filename": "d28074c05d3b4c9190036eaa6c932101.png",
+            "category": -1
+        },
+        {
+            "id": 66,
+            "filename": "d607adf6c2cc48d9bc9ecf6093a1b85a.png",
+            "category": -1
+        },
+        {
+            "id": 67,
+            "filename": "ddb2b274df484423952a7724666e589c.png",
+            "category": -1
+        },
+        {
+            "id": 68,
+            "filename": "1a502e79c9b041feb46a98682d5e8491.png",
+            "category": -1
+        },
+        {
+            "id": 69,
+            "filename": "d32c175376624408aea08f639c530f96.png",
+            "category": -1
+        },
+        {
+            "id": 70,
+            "filename": "d56a084576f84ea99379d231c2abf00a.png",
+            "category": -1
+        },
+        {
+            "id": 71,
+            "filename": "dcaf4310fce146cea738a73de9978fcc.png",
+            "category": -1
+        },
+        {
+            "id": 72,
+            "filename": "585b65a6441f4abebcbd65bc4888937d.png",
+            "category": -1
+        },
+        {
+            "id": 73,
+            "filename": "eb6f3b27e775489e9b0406530ba8b017.png",
+            "category": -1
+        },
+        {
+            "id": 74,
+            "filename": "009637e1a28e4d9d8ac2d7c78e7d6f04.png",
+            "category": -1
+        },
+        {
+            "id": 75,
+            "filename": "b3de06355d4e45819c8fd572a42b1618.png",
+            "category": -1
+        },
+        {
+            "id": 76,
+            "filename": "54f6ca06463b42d4acb83a72b83dabfa.png",
+            "category": -1
+        },
+        {
+            "id": 77,
+            "filename": "2a503f8fa33642fb91a98a53d8745d40.png",
+            "category": -1
+        },
+        {
+            "id": 78,
+            "filename": "a21d7e7c671b4b9d92c61104096544b7.png",
+            "category": -1
+        },
+        {
+            "id": 79,
+            "filename": "6bb5c223ed0448e38975ee5733b736b3.png",
+            "category": -1
+        },
+        {
+            "id": 80,
+            "filename": "bdbf21a8994443bfb82879f24fa4214e.png",
+            "category": -1
+        },
+        {
+            "id": 81,
+            "filename": "316d2ef62a02486a8136d1d0dd9232ca.png",
+            "category": -1
+        },
+        {
+            "id": 82,
+            "filename": "7b8b061502d84fc1af6fb63ddaed19d7.png",
+            "category": -1
+        },
+        {
+            "id": 83,
+            "filename": "376cf2a21d0541e69a9e47c82b7346ea.png",
+            "category": -1
+        },
+        {
+            "id": 84,
+            "filename": "7b162cccd27e412ca673846048e3cca8.png",
+            "category": -1
+        },
+        {
+            "id": 85,
+            "filename": "90b0e7090ff94e7eb94ec5a7e5c32a76.png",
+            "category": -1
+        },
+        {
+            "id": 86,
+            "filename": "fe1dac42246e42edbc68b55fd5528718.png",
+            "category": -1
+        },
+        {
+            "id": 87,
+            "filename": "bfbe870a243b4c529ec84b3a4beae8b6.png",
+            "category": -1
+        },
+        {
+            "id": 88,
+            "filename": "c4c99714e53443b19177a98bbd3de258.png",
+            "category": -1
+        },
+        {
+            "id": 89,
+            "filename": "523bb53c691e4332ba4bb87cb270fbdf.png",
+            "category": -1
+        },
+        {
+            "id": 90,
+            "filename": "1209046a97d44e3ca09e881d3da9b68e.png",
+            "category": -1
+        },
+        {
+            "id": 91,
+            "filename": "848a12d3f87d40ab9cbbb16fb21d8b84.png",
+            "category": -1
+        },
+        {
+            "id": 92,
+            "filename": "36b36ef4d8db408c8c1a948f58f9838b.png",
+            "category": -1
+        },
+        {
+            "id": 93,
+            "filename": "f3b8fae3a659422689bf064a03a86888.png",
+            "category": -1
+        },
+        {
+            "id": 94,
+            "filename": "d8607f63e9814a5ea1def91967469acf.png",
+            "category": -1
+        },
+        {
+            "id": 95,
+            "filename": "d1b98c89b6c049beb02bd8c8909e6f9b.png",
+            "category": -1
+        },
+        {
+            "id": 96,
+            "filename": "c8e0a131df7446a89e2fbfa4fb22b5d9.png",
+            "category": -1
+        },
+        {
+            "id": 97,
+            "filename": "a38bccfa8cb748e1abe233a21330126e.png",
+            "category": -1
+        },
+        {
+            "id": 98,
+            "filename": "ce06a24899de4134a3e22857642d2ba3.png",
+            "category": -1
+        },
+        {
+            "id": 99,
+            "filename": "64d27c87c98e40379dfe2bf33a2bc03c.png",
+            "category": -1
+        },
+        {
+            "id": 100,
+            "filename": "54cc79ba5d2a491796523d2cef9ec357.png",
+            "category": -1
+        },
+        {
+            "id": 101,
+            "filename": "b75c6018cbf54e3cac3128071263c8c6.png",
+            "category": -1
+        },
+        {
+            "id": 102,
+            "filename": "68a244b3ae874716a7b502e14a70ba6f.png",
+            "category": -1
+        },
+        {
+            "id": 103,
+            "filename": "531ecb9bfc9e4539841097f5319e59c2.png",
+            "category": -1
+        },
+        {
+            "id": 104,
+            "filename": "26566698ebc94b64a16e03d3f8c86dff.png",
+            "category": -1
+        }
+    ]
+}
