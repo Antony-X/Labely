@@ -3,6 +3,7 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/haptic-tab';
+import { CenterTabButton } from '@/components/CenterTabButton';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -18,6 +19,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: Colors[colorScheme ?? 'light'].surface,
           borderTopColor: Colors[colorScheme ?? 'light'].border,
+          height: 60,
+          paddingBottom: 8,
         },
       }}>
       <Tabs.Screen
@@ -30,15 +33,23 @@ export default function TabLayout() {
       <Tabs.Screen
         name="requester"
         options={{
-          title: 'Requester',
+          title: 'Jobs',
           tabBarIcon: ({ color }) => <Ionicons name="briefcase" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="labeler"
         options={{
-          title: 'Labeler',
-          tabBarIcon: ({ color }) => <Ionicons name="game-controller" size={24} color={color} />,
+          title: '',
+          tabBarButton: CenterTabButton,
+          tabBarIcon: ({ color }) => <Ionicons name="flash" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="leaderboard"
+        options={{
+          title: 'Ranks',
+          tabBarIcon: ({ color }) => <Ionicons name="trophy" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

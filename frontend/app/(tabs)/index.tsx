@@ -1,129 +1,97 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, LinearGradient } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
-import { Card } from '@/components/ui/Card';
+import { Colors, Spacing, FontSizes } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Landing() {
+const { width } = Dimensions.get('window');
+
+export default function Home() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Hero */}
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={styles.content}>
+        {/* Hero Section */}
         <View style={styles.hero}>
+          <View style={[styles.glowCircle, { backgroundColor: `${colors.tint}15` }]} />
           <Text style={[styles.logo, { color: colors.tint }]}>Labely</Text>
-          <Text style={[styles.tagline, { color: colors.textSecondary }]}>
-            Gamified Data Labeling Platform
+          <Text style={[styles.tagline, { color: colors.text }]}>
+            AI Training Data,{'\n'}Gamified
           </Text>
-          <Text style={[styles.description, { color: colors.textSecondary }]}>
-            Get high-quality labeled data or earn money by labeling tasks
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Label data. Earn rewards. Build the future.
           </Text>
         </View>
 
-        {/* Features */}
-        <View style={styles.features}>
-          <Card variant="secondary">
-            <View style={styles.featureIcon}>
-              <Ionicons name="briefcase-outline" size={32} color={colors.tint} />
-            </View>
-            <Text style={[styles.featureTitle, { color: colors.text }]}>
-              For Requesters
-            </Text>
-            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
-              Create labeling jobs, set quality standards, and get accurate results with confidence scores
-            </Text>
-            <Button
-              title="Create a Job"
-              variant="outline"
-              onPress={() => router.push('/requester')}
-              style={{ marginTop: Spacing.md }}
-            />
-          </Card>
+        {/* Stats */}
+        <View style={styles.stats}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: colors.tint }]}>1M+</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Labels</Text>
+          </View>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: colors.tint }]}>10K+</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Labelers</Text>
+          </View>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: colors.tint }]}>98%</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Accuracy</Text>
+          </View>
+        </View>
 
-          <Card variant="secondary">
-            <View style={styles.featureIcon}>
-              <Ionicons name="game-controller-outline" size={32} color={colors.tint} />
+        {/* Action Cards */}
+        <View style={styles.actions}>
+          <View style={[styles.actionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: `${colors.tint}15` }]}>
+              <Ionicons name="flash" size={28} color={colors.tint} />
             </View>
-            <Text style={[styles.featureTitle, { color: colors.text }]}>
-              For Labelers
-            </Text>
-            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
-              Earn money while having fun. Build your ELO rating, maintain streaks, and get rewarded for accuracy
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Start Labeling</Text>
+            <Text style={[styles.actionDesc, { color: colors.textSecondary }]}>
+              Swipe, label, earn
             </Text>
             <Button
-              title="Start Labeling"
-              variant="outline"
+              title="Label Now"
               onPress={() => router.push('/labeler')}
-              style={{ marginTop: Spacing.md }}
+              style={styles.actionButton}
             />
-          </Card>
-        </View>
-
-        {/* Benefits */}
-        <View style={styles.benefits}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Why Labely?
-          </Text>
-
-          <View style={styles.benefitRow}>
-            <View style={[styles.benefitIcon, { backgroundColor: `${colors.success}20` }]}>
-              <Ionicons name="shield-checkmark" size={24} color={colors.success} />
-            </View>
-            <View style={styles.benefitText}>
-              <Text style={[styles.benefitTitle, { color: colors.text }]}>
-                Quality Assured
-              </Text>
-              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
-                Consensus voting and gold standard checks ensure high-quality labels
-              </Text>
-            </View>
           </View>
 
-          <View style={styles.benefitRow}>
-            <View style={[styles.benefitIcon, { backgroundColor: `${colors.warning}20` }]}>
-              <Ionicons name="trophy" size={24} color={colors.warning} />
+          <View style={[styles.actionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: `${colors.warning}15` }]}>
+              <Ionicons name="trophy" size={28} color={colors.warning} />
             </View>
-            <View style={styles.benefitText}>
-              <Text style={[styles.benefitTitle, { color: colors.text }]}>
-                Gamified Experience
-              </Text>
-              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
-                ELO ratings, streaks, and achievements make labeling engaging
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.benefitRow}>
-            <View style={[styles.benefitIcon, { backgroundColor: `${colors.tint}20` }]}>
-              <Ionicons name="speedometer" size={24} color={colors.tint} />
-            </View>
-            <View style={styles.benefitText}>
-              <Text style={[styles.benefitTitle, { color: colors.text }]}>
-                Fast & Efficient
-              </Text>
-              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
-                Mobile-first design for quick labeling on any device
-              </Text>
-            </View>
+            <Text style={[styles.actionTitle, { color: colors.text }]}>Leaderboard</Text>
+            <Text style={[styles.actionDesc, { color: colors.textSecondary }]}>
+              Compete globally
+            </Text>
+            <Button
+              title="View Ranks"
+              variant="outline"
+              onPress={() => router.push('/leaderboard')}
+              style={styles.actionButton}
+            />
           </View>
         </View>
 
-        {/* CTA */}
-        <View style={styles.cta}>
-          <Button
-            title="Get Started"
-            size="large"
-            onPress={() => router.push('/profile')}
-          />
+        {/* Bottom CTA */}
+        <View style={[styles.ctaCard, { backgroundColor: colors.tint }]}>
+          <Ionicons name="briefcase" size={24} color="#fff" />
+          <View style={styles.ctaText}>
+            <Text style={styles.ctaTitle}>Need Data Labeled?</Text>
+            <Text style={styles.ctaDesc}>Create jobs, set quality standards</Text>
+          </View>
+          <Ionicons name="arrow-forward" size={24} color="#fff" />
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -131,82 +99,116 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
+  content: {
+    flex: 1,
     padding: Spacing.lg,
   },
   hero: {
     alignItems: 'center',
-    paddingVertical: Spacing.xxl,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxl,
+    position: 'relative',
+  },
+  glowCircle: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    top: 0,
+    opacity: 0.5,
   },
   logo: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    marginBottom: Spacing.sm,
+    fontSize: 56,
+    fontWeight: '900',
+    letterSpacing: -2,
+    marginBottom: Spacing.md,
   },
   tagline: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginBottom: Spacing.md,
-  },
-  description: {
-    fontSize: FontSizes.md,
+    fontSize: 32,
+    fontWeight: '700',
     textAlign: 'center',
-    maxWidth: 300,
-  },
-  features: {
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  featureIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: BorderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  featureTitle: {
-    fontSize: FontSizes.xl,
-    fontWeight: 'bold',
+    lineHeight: 38,
     marginBottom: Spacing.sm,
   },
-  featureDescription: {
-    fontSize: FontSizes.md,
-    lineHeight: 22,
-  },
-  benefits: {
-    marginBottom: Spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: FontSizes.xxl,
-    fontWeight: 'bold',
-    marginBottom: Spacing.lg,
-  },
-  benefitRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  benefitIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  benefitText: {
-    flex: 1,
-  },
-  benefitTitle: {
+  subtitle: {
     fontSize: FontSizes.lg,
-    fontWeight: '600',
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  stats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: Spacing.xxl,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '800',
     marginBottom: Spacing.xs,
   },
-  benefitDescription: {
-    fontSize: FontSizes.md,
-    lineHeight: 20,
+  statLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
-  cta: {
+  divider: {
+    width: 1,
+    height: 40,
+    opacity: 0.3,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  actionCard: {
+    flex: 1,
+    padding: Spacing.lg,
+    borderRadius: 20,
+    borderWidth: 1,
     alignItems: 'center',
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  actionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
+  },
+  actionDesc: {
+    fontSize: FontSizes.sm,
+    marginBottom: Spacing.md,
+    textAlign: 'center',
+  },
+  actionButton: {
+    width: '100%',
+  },
+  ctaCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: 16,
+    gap: Spacing.md,
+  },
+  ctaText: {
+    flex: 1,
+  },
+  ctaTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  ctaDesc: {
+    fontSize: FontSizes.sm,
+    color: 'rgba(255,255,255,0.8)',
   },
 });

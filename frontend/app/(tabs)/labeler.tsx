@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,22 +6,22 @@ import {
   Image,
   Pressable,
   Dimensions,
-  PanResponder,
+  Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { ProgressBar } from '@/components/ui/ProgressBar';
 import { mockTasks, mockUserProfile } from '@/data/mockData';
-import { Task, LabelingSession, BoundingBox } from '@/types';
+import { LabelingSession } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const CARD_WIDTH = width - 40;
+const CARD_HEIGHT = height * 0.65;
 
-export default function LabelerScreen() {
+export default function Labeler() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
@@ -34,44 +34,39 @@ export default function LabelerScreen() {
     totalEarned: 0,
   });
   const [showSummary, setShowSummary] = useState(false);
-  const [showGoldWarning, setShowGoldWarning] = useState(false);
-  const [lastEloChange, setLastEloChange] = useState(0);
-  const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [cardAnimation] = useState(new Animated.Value(0));
 
   const currentTask = mockTasks[currentTaskIndex];
-  const totalTasks = 10; // Session limit
-  const progressPercent = (session.tasksCompleted / totalTasks) * 100;
+  const totalTasks = 10;
 
   const handleAnswer = (answer: string) => {
     const task = currentTask;
     const isCorrect = task.isGoldStandard ? task.correctAnswer === answer : true;
-    const eloChange = Math.floor(Math.random() * 20) - 10; // Mock ELO change (-10 to +10)
-    const reward = 0.05; // Mock reward
+    const eloChange = Math.floor(Math.random() * 20) - 10;
+    const reward = 0.08;
 
-    if (task.isGoldStandard && !isCorrect) {
-      setShowGoldWarning(true);
-      setTimeout(() => setShowGoldWarning(false), 2000);
-    }
+    // Animate card out
+    Animated.timing(cardAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      cardAnimation.setValue(0);
 
-    setLastEloChange(eloChange);
-    setSession({
-      tasksCompleted: session.tasksCompleted + 1,
-      correctAnswers: session.correctAnswers + (isCorrect ? 1 : 0),
-      streak: isCorrect ? session.streak + 1 : 0,
-      eloChange: session.eloChange + eloChange,
-      totalEarned: session.totalEarned + reward,
+      setSession({
+        tasksCompleted: session.tasksCompleted + 1,
+        correctAnswers: session.correctAnswers + (isCorrect ? 1 : 0),
+        streak: isCorrect ? session.streak + 1 : 0,
+        eloChange: session.eloChange + eloChange,
+        totalEarned: session.totalEarned + reward,
+      });
+
+      if (session.tasksCompleted + 1 >= totalTasks) {
+        setShowSummary(true);
+      } else {
+        setCurrentTaskIndex((currentTaskIndex + 1) % mockTasks.length);
+      }
     });
-
-    // Move to next task
-    if (session.tasksCompleted + 1 >= totalTasks) {
-      setShowSummary(true);
-    } else {
-      const nextIndex = (currentTaskIndex + 1) % mockTasks.length;
-      setCurrentTaskIndex(nextIndex);
-      setBoundingBoxes([]);
-      setSelectedClass(null);
-    }
   };
 
   const handleEndSession = () => {
@@ -86,104 +81,30 @@ export default function LabelerScreen() {
     setCurrentTaskIndex(0);
   };
 
-  const renderTaskUI = () => {
-    if (!currentTask) return null;
+  const cardTranslateX = cardAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, width],
+  });
 
-    switch (currentTask.taskType) {
-      case 'binary':
-        return (
-          <View style={styles.binaryContainer}>
-            <Button
-              title={currentTask.classes[0]}
-              onPress={() => handleAnswer(currentTask.classes[0])}
-              size="large"
-              style={styles.binaryButton}
-            />
-            <Button
-              title={currentTask.classes[1]}
-              onPress={() => handleAnswer(currentTask.classes[1])}
-              variant="secondary"
-              size="large"
-              style={styles.binaryButton}
-            />
-          </View>
-        );
+  const cardOpacity = cardAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0.5, 0],
+  });
 
-      case 'multi':
-        return (
-          <View style={styles.multiContainer}>
-            {currentTask.classes.map((cls) => (
-              <Button
-                key={cls}
-                title={cls}
-                onPress={() => handleAnswer(cls)}
-                variant="outline"
-                style={styles.multiButton}
-              />
-            ))}
-          </View>
-        );
-
-      case 'object-detection':
-        return (
-          <View style={styles.objectDetectionContainer}>
-            <View style={styles.classSelector}>
-              {currentTask.classes.map((cls) => (
-                <Pressable
-                  key={cls}
-                  onPress={() => setSelectedClass(cls)}
-                  style={[
-                    styles.classButton,
-                    {
-                      backgroundColor: selectedClass === cls ? colors.tint : colors.surfaceSecondary,
-                      borderColor: selectedClass === cls ? colors.tint : colors.border,
-                    }
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.classButtonText,
-                      { color: selectedClass === cls ? '#fff' : colors.text }
-                    ]}
-                  >
-                    {cls}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Text style={[styles.hint, { color: colors.textSecondary }]}>
-              Tap to draw bounding boxes (mock)
-            </Text>
-
-            <Button
-              title="Submit Annotations"
-              onPress={() => handleAnswer('annotated')}
-              style={{ marginTop: Spacing.md }}
-            />
-          </View>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  if (!currentTask) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={{ color: colors.text }}>No tasks available</Text>
-      </View>
-    );
-  }
+  if (!currentTask) return null;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header Stats */}
-      <View style={[styles.header, { backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <Badge label={`ELO ${mockUserProfile.elo}`} variant="gold" />
-          <View style={styles.streakBadge}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* Top Bar */}
+      <View style={styles.topBar}>
+        <View style={styles.topLeft}>
+          <View style={[styles.eloContainer, { backgroundColor: colors.surface }]}>
+            <Ionicons name="trophy" size={16} color={colors.gold} />
+            <Text style={[styles.eloText, { color: colors.text }]}>
+              {mockUserProfile.elo}
+            </Text>
+          </View>
+          <View style={[styles.streakContainer, { backgroundColor: colors.surface }]}>
             <Ionicons name="flame" size={16} color={colors.warning} />
             <Text style={[styles.streakText, { color: colors.text }]}>
               {session.streak}
@@ -191,143 +112,180 @@ export default function LabelerScreen() {
           </View>
         </View>
 
-        <View style={styles.headerRight}>
-          <Text style={[styles.earnings, { color: colors.success }]}>
-            +${session.totalEarned.toFixed(2)}
-          </Text>
-          <Pressable onPress={() => setShowSummary(true)}>
-            <Ionicons name="close-circle-outline" size={24} color={colors.icon} />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Session Progress */}
-      <View style={styles.progressSection}>
-        <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
-          Task {session.tasksCompleted + 1} of {totalTasks}
+        <Text style={[styles.earnings, { color: colors.success }]}>
+          +${session.totalEarned.toFixed(2)}
         </Text>
-        <ProgressBar progress={progressPercent} showLabel={false} />
       </View>
 
-      {/* Gold Item Warning */}
-      {showGoldWarning && (
-        <View style={[styles.goldWarning, { backgroundColor: colors.gold }]}>
-          <Ionicons name="warning" size={20} color="#000" />
-          <Text style={styles.goldWarningText}>
-            Incorrect! This was a gold standard item.
-          </Text>
+      {/* Progress */}
+      <View style={styles.progressBar}>
+        <View style={styles.progressFilled}>
+          {Array.from({ length: totalTasks }).map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.progressDot,
+                {
+                  backgroundColor: i < session.tasksCompleted ? colors.tint : colors.surfaceSecondary,
+                },
+              ]}
+            />
+          ))}
         </View>
-      )}
+      </View>
 
-      {/* ELO Change Indicator */}
-      {lastEloChange !== 0 && (
-        <View style={[
-          styles.eloChange,
-          { backgroundColor: lastEloChange > 0 ? colors.success : colors.error }
-        ]}>
-          <Text style={styles.eloChangeText}>
-            {lastEloChange > 0 ? '+' : ''}{lastEloChange} ELO
-          </Text>
-        </View>
-      )}
+      {/* Card Stack */}
+      <View style={styles.cardStack}>
+        {/* Next card (background) */}
+        {mockTasks[(currentTaskIndex + 1) % mockTasks.length] && (
+          <View
+            style={[
+              styles.card,
+              styles.nextCard,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          />
+        )}
 
-      {/* Image */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: currentTask.imageUrl }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-        {currentTask.isGoldStandard && (
-          <View style={[styles.goldBadge, { backgroundColor: colors.gold }]}>
-            <Ionicons name="star" size={16} color="#000" />
+        {/* Current card */}
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              transform: [{ translateX: cardTranslateX }],
+              opacity: cardOpacity,
+            },
+          ]}
+        >
+          {/* Task Image */}
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: currentTask.imageUrl }} style={styles.image} />
+            {currentTask.isGoldStandard && (
+              <View style={[styles.goldBadge, { backgroundColor: colors.gold }]}>
+                <Ionicons name="star" size={20} color="#000" />
+                <Text style={styles.goldText}>Gold</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Task Info */}
+          <View style={styles.taskInfo}>
+            <Text style={[styles.taskLabel, { color: colors.textSecondary }]}>
+              {currentTask.taskType === 'binary' ? 'Choose one' :
+               currentTask.taskType === 'multi' ? 'Select category' :
+               'Draw objects'}
+            </Text>
+            <Text style={[styles.rewardLabel, { color: colors.success }]}>
+              +$0.08 per label
+            </Text>
+          </View>
+        </Animated.View>
+      </View>
+
+      {/* Action Buttons */}
+      <View style={styles.actions}>
+        {currentTask.taskType === 'binary' ? (
+          <>
+            <Pressable
+              onPress={() => handleAnswer(currentTask.classes[0])}
+              style={[styles.actionButton, styles.rejectButton, { backgroundColor: colors.error }]}
+            >
+              <Ionicons name="close" size={32} color="#fff" />
+              <Text style={styles.actionButtonText}>{currentTask.classes[0]}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => handleAnswer(currentTask.classes[1])}
+              style={[styles.actionButton, styles.acceptButton, { backgroundColor: colors.success }]}
+            >
+              <Ionicons name="checkmark" size={32} color="#fff" />
+              <Text style={styles.actionButtonText}>{currentTask.classes[1]}</Text>
+            </Pressable>
+          </>
+        ) : (
+          <View style={styles.multiButtons}>
+            {currentTask.classes.map((cls) => (
+              <Pressable
+                key={cls}
+                onPress={() => handleAnswer(cls)}
+                style={[styles.classButton, { backgroundColor: colors.tint }]}
+              >
+                <Text style={styles.classButtonText}>{cls}</Text>
+              </Pressable>
+            ))}
           </View>
         )}
-      </View>
-
-      {/* Task UI */}
-      <View style={styles.taskUIContainer}>
-        <Text style={[styles.taskType, { color: colors.textSecondary }]}>
-          {currentTask.taskType === 'binary' ? 'Binary Classification' :
-           currentTask.taskType === 'multi' ? 'Multi-class Classification' :
-           'Object Detection'}
-        </Text>
-        {renderTaskUI()}
       </View>
 
       {/* Session Summary Modal */}
       <Modal
         visible={showSummary}
         onClose={() => {}}
-        title="Session Summary"
-        actions={
-          <Button title="Done" onPress={handleEndSession} />
-        }
+        title="Session Complete!"
       >
         <View style={styles.summaryContent}>
-          <View style={styles.summaryRow}>
-            <Ionicons name="checkmark-circle" size={48} color={colors.success} />
-            <Text style={[styles.summaryTitle, { color: colors.text }]}>
-              Great Work!
-            </Text>
+          <View style={styles.summaryIcon}>
+            <Ionicons name="checkmark-circle" size={64} color={colors.success} />
           </View>
 
-          <Card variant="secondary">
-            <View style={styles.summaryStats}>
-              <View style={styles.summaryStat}>
-                <Text style={[styles.summaryValue, { color: colors.text }]}>
-                  {session.tasksCompleted}
-                </Text>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                  Tasks Completed
-                </Text>
-              </View>
-              <View style={styles.summaryStat}>
-                <Text style={[styles.summaryValue, { color: colors.text }]}>
-                  {((session.correctAnswers / session.tasksCompleted) * 100).toFixed(0)}%
-                </Text>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                  Accuracy
-                </Text>
-              </View>
+          <View style={styles.summaryStats}>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Tasks Completed
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>
+                {session.tasksCompleted}
+              </Text>
             </View>
-          </Card>
 
-          <Card variant="secondary">
-            <View style={styles.summaryStats}>
-              <View style={styles.summaryStat}>
-                <Text style={[styles.summaryValue, { color: colors.success }]}>
-                  +${session.totalEarned.toFixed(2)}
-                </Text>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                  Earned
-                </Text>
-              </View>
-              <View style={styles.summaryStat}>
-                <Text style={[
-                  styles.summaryValue,
-                  { color: session.eloChange >= 0 ? colors.success : colors.error }
-                ]}>
-                  {session.eloChange >= 0 ? '+' : ''}{session.eloChange}
-                </Text>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                  ELO Change
-                </Text>
-              </View>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Accuracy
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.success }]}>
+                {((session.correctAnswers / session.tasksCompleted) * 100).toFixed(0)}%
+              </Text>
             </View>
-          </Card>
+
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                Earned
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.success }]}>
+                +${session.totalEarned.toFixed(2)}
+              </Text>
+            </View>
+
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                ELO Change
+              </Text>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: session.eloChange >= 0 ? colors.success : colors.error },
+                ]}
+              >
+                {session.eloChange >= 0 ? '+' : ''}{session.eloChange}
+              </Text>
+            </View>
+          </View>
 
           {session.streak > 5 && (
             <View style={styles.streakAchievement}>
-              <Ionicons name="flame" size={32} color={colors.warning} />
+              <Ionicons name="flame" size={40} color={colors.warning} />
               <Text style={[styles.streakAchievementText, { color: colors.text }]}>
-                {session.streak} task streak!
+                {session.streak} Task Streak! 🔥
               </Text>
             </View>
           )}
+
+          <Button title="Done" onPress={handleEndSession} size="large" />
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -335,75 +293,84 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.md,
   },
-  headerLeft: {
+  topLeft: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    alignItems: 'center',
   },
-  headerRight: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    alignItems: 'center',
-  },
-  streakBadge: {
+  eloContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-  },
-  streakText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
-  earnings: {
-    fontSize: FontSizes.lg,
-    fontWeight: 'bold',
-  },
-  progressSection: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
-  },
-  progressLabel: {
-    fontSize: FontSizes.sm,
-    marginBottom: Spacing.xs,
-  },
-  goldWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    gap: Spacing.sm,
-  },
-  goldWarningText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: '#000',
-  },
-  eloChange: {
-    position: 'absolute',
-    top: 120,
-    right: Spacing.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
-    zIndex: 10,
   },
-  eloChangeText: {
-    color: '#fff',
-    fontSize: FontSizes.md,
-    fontWeight: 'bold',
+  eloText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+  },
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+  },
+  streakText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+  },
+  earnings: {
+    fontSize: FontSizes.xl,
+    fontWeight: '800',
+  },
+  progressBar: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
+  },
+  progressFilled: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  progressDot: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  cardStack: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 24,
+    borderWidth: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  nextCard: {
+    transform: [{ scale: 0.95 }],
+    opacity: 0.5,
   },
   imageContainer: {
-    width: width - Spacing.md * 2,
-    height: width - Spacing.md * 2,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
+    flex: 1,
     position: 'relative',
   },
   image: {
@@ -412,95 +379,111 @@ const styles = StyleSheet.create({
   },
   goldBadge: {
     position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    top: Spacing.lg,
+    right: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+  },
+  goldText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+    color: '#000',
+  },
+  taskInfo: {
+    padding: Spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  taskLabel: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  rewardLabel: {
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+  },
+  actions: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    paddingTop: Spacing.md,
+  },
+  actionButton: {
+    height: 70,
+    borderRadius: 35,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  taskUIContainer: {
     flex: 1,
-    padding: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  taskType: {
-    fontSize: FontSizes.sm,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
+  rejectButton: {
+    marginRight: Spacing.sm,
   },
-  binaryContainer: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
+  acceptButton: {
+    marginLeft: Spacing.sm,
   },
-  binaryButton: {
-    flex: 1,
+  actionButtonText: {
+    color: '#fff',
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+    marginTop: Spacing.xs,
   },
-  multiContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  multiButton: {
-    minWidth: '48%',
-  },
-  objectDetectionContainer: {
-    gap: Spacing.md,
-  },
-  classSelector: {
+  multiButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
   },
   classButton: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md + 4,
+    borderRadius: BorderRadius.full,
+    minWidth: '48%',
+    alignItems: 'center',
   },
   classButtonText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
-  hint: {
-    fontSize: FontSizes.sm,
-    textAlign: 'center',
+    color: '#fff',
+    fontSize: FontSizes.md,
+    fontWeight: '700',
   },
   summaryContent: {
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  summaryIcon: {
+    marginBottom: Spacing.md,
+  },
+  summaryStats: {
+    width: '100%',
     gap: Spacing.md,
   },
   summaryRow: {
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  summaryTitle: {
-    fontSize: FontSizes.xxl,
-    fontWeight: 'bold',
-  },
-  summaryStats: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  summaryStat: {
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  summaryValue: {
-    fontSize: FontSizes.xxl,
-    fontWeight: 'bold',
-    marginBottom: Spacing.xs,
   },
   summaryLabel: {
-    fontSize: FontSizes.sm,
+    fontSize: FontSizes.md,
+  },
+  summaryValue: {
+    fontSize: FontSizes.xl,
+    fontWeight: '700',
   },
   streakAchievement: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
+    gap: Spacing.md,
+    padding: Spacing.lg,
   },
   streakAchievementText: {
     fontSize: FontSizes.lg,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
