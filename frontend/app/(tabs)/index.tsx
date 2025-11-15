@@ -1,98 +1,212 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function Landing() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
 
-export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Hero */}
+        <View style={styles.hero}>
+          <Text style={[styles.logo, { color: colors.tint }]}>Labely</Text>
+          <Text style={[styles.tagline, { color: colors.textSecondary }]}>
+            Gamified Data Labeling Platform
+          </Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
+            Get high-quality labeled data or earn money by labeling tasks
+          </Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Features */}
+        <View style={styles.features}>
+          <Card variant="secondary">
+            <View style={styles.featureIcon}>
+              <Ionicons name="briefcase-outline" size={32} color={colors.tint} />
+            </View>
+            <Text style={[styles.featureTitle, { color: colors.text }]}>
+              For Requesters
+            </Text>
+            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
+              Create labeling jobs, set quality standards, and get accurate results with confidence scores
+            </Text>
+            <Button
+              title="Create a Job"
+              variant="outline"
+              onPress={() => router.push('/requester')}
+              style={{ marginTop: Spacing.md }}
+            />
+          </Card>
+
+          <Card variant="secondary">
+            <View style={styles.featureIcon}>
+              <Ionicons name="game-controller-outline" size={32} color={colors.tint} />
+            </View>
+            <Text style={[styles.featureTitle, { color: colors.text }]}>
+              For Labelers
+            </Text>
+            <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
+              Earn money while having fun. Build your ELO rating, maintain streaks, and get rewarded for accuracy
+            </Text>
+            <Button
+              title="Start Labeling"
+              variant="outline"
+              onPress={() => router.push('/labeler')}
+              style={{ marginTop: Spacing.md }}
+            />
+          </Card>
+        </View>
+
+        {/* Benefits */}
+        <View style={styles.benefits}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Why Labely?
+          </Text>
+
+          <View style={styles.benefitRow}>
+            <View style={[styles.benefitIcon, { backgroundColor: `${colors.success}20` }]}>
+              <Ionicons name="shield-checkmark" size={24} color={colors.success} />
+            </View>
+            <View style={styles.benefitText}>
+              <Text style={[styles.benefitTitle, { color: colors.text }]}>
+                Quality Assured
+              </Text>
+              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
+                Consensus voting and gold standard checks ensure high-quality labels
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.benefitRow}>
+            <View style={[styles.benefitIcon, { backgroundColor: `${colors.warning}20` }]}>
+              <Ionicons name="trophy" size={24} color={colors.warning} />
+            </View>
+            <View style={styles.benefitText}>
+              <Text style={[styles.benefitTitle, { color: colors.text }]}>
+                Gamified Experience
+              </Text>
+              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
+                ELO ratings, streaks, and achievements make labeling engaging
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.benefitRow}>
+            <View style={[styles.benefitIcon, { backgroundColor: `${colors.tint}20` }]}>
+              <Ionicons name="speedometer" size={24} color={colors.tint} />
+            </View>
+            <View style={styles.benefitText}>
+              <Text style={[styles.benefitTitle, { color: colors.text }]}>
+                Fast & Efficient
+              </Text>
+              <Text style={[styles.benefitDescription, { color: colors.textSecondary }]}>
+                Mobile-first design for quick labeling on any device
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* CTA */}
+        <View style={styles.cta}>
+          <Button
+            title="Get Started"
+            size="large"
+            onPress={() => router.push('/profile')}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: Spacing.lg,
+  },
+  hero: {
     alignItems: 'center',
-    gap: 8,
+    paddingVertical: Spacing.xxl,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  logo: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    marginBottom: Spacing.sm,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  tagline: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+  },
+  description: {
+    fontSize: FontSizes.md,
+    textAlign: 'center',
+    maxWidth: 300,
+  },
+  features: {
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  featureIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  featureTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    marginBottom: Spacing.sm,
+  },
+  featureDescription: {
+    fontSize: FontSizes.md,
+    lineHeight: 22,
+  },
+  benefits: {
+    marginBottom: Spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    marginBottom: Spacing.lg,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  benefitIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  benefitText: {
+    flex: 1,
+  },
+  benefitTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  benefitDescription: {
+    fontSize: FontSizes.md,
+    lineHeight: 20,
+  },
+  cta: {
+    alignItems: 'center',
   },
 });

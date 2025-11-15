@@ -1,50 +1,122 @@
-# Welcome to your Expo app 👋
+# Labely - Gamified Data Labeling App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first React Native Expo app for gamified data labeling with two user roles: Requester and Labeler.
 
-## Get started
+## Features
 
-1. Install dependencies
+### 🎯 For Requesters
+- **Dashboard**: View all labeling jobs with status, progress, and confidence scores
+- **Create Job Wizard**: Multi-step wizard to create labeling jobs with:
+  - Task type selection (Binary, Multi-class, Object Detection)
+  - Class definition
+  - Data upload (placeholder)
+  - Budget and quality settings (consensus, ELO threshold, gold-check frequency)
+- **Job Details**: Detailed view with progress charts and confidence timeline
 
-   ```bash
-   npm install
-   ```
+### 🎮 For Labelers
+- **Swipe-style Task UI**: Different interfaces for different task types:
+  - Binary: Left/Right buttons
+  - Multi-class: Row of buttons
+  - Object Detection: Mock bounding-box drawing overlay
+- **Gamification Features**:
+  - ELO rating badge
+  - Streak counter
+  - Per-item rewards
+  - Session progress tracking
+  - Gold standard items with warnings
+  - ELO change indicators
+  - End-session summary modal
 
-2. Start the app
+### 🌍 Global Features
+- Landing page with app overview
+- Profile page with wallet, stats, achievements, and settings
+- Dark-friendly, minimalistic UI
+- Clean card-based layout
+- Progress bars and modals
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Installation
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Install dependencies:
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Start the development server:
+```bash
+npm start
+```
 
-## Learn more
+3. Run on your device:
+   - **iOS**: Press `i` or scan QR code with Camera app
+   - **Android**: Press `a` or scan QR code with Expo Go app
+   - **Web**: Press `w`
 
-To learn more about developing your project with Expo, look at the following resources:
+## Project Structure
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+frontend/
+├── app/                      # Screens (Expo Router)
+│   ├── (tabs)/              # Tab-based navigation
+│   │   ├── index.tsx        # Landing page
+│   │   ├── requester.tsx    # Requester dashboard
+│   │   ├── labeler.tsx      # Labeler task UI
+│   │   └── profile.tsx      # User profile
+│   ├── create-job.tsx       # Create job wizard
+│   └── job-details.tsx      # Job details page
+├── components/
+│   └── ui/                  # Reusable UI components
+│       ├── Card.tsx
+│       ├── Button.tsx
+│       ├── ProgressBar.tsx
+│       ├── Badge.tsx
+│       └── Modal.tsx
+├── constants/
+│   └── theme.ts             # App theme (colors, spacing, fonts)
+├── data/
+│   └── mockData.ts          # Mock data for development
+├── types/
+│   └── index.ts             # TypeScript type definitions
+└── hooks/                   # Custom React hooks
+```
 
-## Join the community
+## Tech Stack
 
-Join our community of developers creating universal apps.
+- **Framework**: React Native with Expo
+- **Navigation**: Expo Router (file-based routing)
+- **Styling**: StyleSheet API with custom theme
+- **State**: Local state with React hooks (no backend)
+- **Icons**: Ionicons from @expo/vector-icons
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Mock Data
+
+The app uses mock data defined in `data/mockData.ts`:
+- **Jobs**: Sample labeling jobs with different task types and statuses
+- **Tasks**: Sample tasks for labeling (binary, multi-class, object detection)
+- **User Profile**: Mock user data with ELO, stats, and wallet balance
+- **Charts**: Mock data for progress and confidence charts
+
+## Ready for Backend Integration
+
+The app is structured to be easily connected to a real API:
+
+1. **API Layer**: Create an `api/` folder with API client functions
+2. **State Management**: Add Redux, Zustand, or React Query for global state
+3. **Replace Mock Data**: Replace imports from `data/mockData.ts` with API calls
+4. **Add Authentication**: Integrate auth flow (e.g., Firebase, Auth0)
+5. **File Upload**: Implement real file upload for images
+6. **Real-time Updates**: Add WebSocket support for live job progress
+
+## Theme Customization
+
+Edit `constants/theme.ts` to customize:
+- **Colors**: Light and dark mode colors
+- **Spacing**: Consistent spacing values
+- **Border Radius**: Component border radius values
+- **Font Sizes**: Typography scale

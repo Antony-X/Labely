@@ -1,41 +1,52 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Labely App Theme - Dark-friendly, clean, minimalistic
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const brandColor = '#6366f1'; // Indigo
+const brandColorDark = '#818cf8'; // Light indigo
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    background: '#f9fafb',
+    surface: '#ffffff',
+    surfaceSecondary: '#f3f4f6',
+    tint: brandColor,
+    border: '#e5e7eb',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    icon: '#6b7280',
+    tabIconDefault: '#9ca3af',
+    tabIconSelected: brandColor,
+    gold: '#fbbf24',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#f9fafb',
+    textSecondary: '#9ca3af',
+    background: '#0f172a',
+    surface: '#1e293b',
+    surfaceSecondary: '#334155',
+    tint: brandColorDark,
+    border: '#334155',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    icon: '#94a3b8',
+    tabIconDefault: '#64748b',
+    tabIconSelected: brandColorDark,
+    gold: '#fbbf24',
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
@@ -51,3 +62,30 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+
+export const BorderRadius = {
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+  full: 9999,
+};
+
+export const FontSizes = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+};
