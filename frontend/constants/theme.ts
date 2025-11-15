@@ -1,44 +1,56 @@
 /**
- * Labely App Theme - Dark-friendly, clean, minimalistic
+ * Labely App Theme - White with Pink/Purple Gradients
  */
 
 import { Platform } from 'react-native';
 
-const brandColor = '#6366f1'; // Indigo
-const brandColorDark = '#818cf8'; // Light indigo
+const primaryPurple = '#a855f7'; // Purple
+const primaryPink = '#ec4899'; // Pink
+const lightPurple = '#e9d5ff'; // Light purple
+const lightPink = '#fce7f3'; // Light pink
 
 export const Colors = {
   light: {
     text: '#1f2937',
     textSecondary: '#6b7280',
-    background: '#f9fafb',
+    background: '#ffffff',
     surface: '#ffffff',
-    surfaceSecondary: '#f3f4f6',
-    tint: brandColor,
-    border: '#e5e7eb',
+    surfaceSecondary: '#faf5ff',
+    tint: primaryPurple,
+    accent: primaryPink,
+    border: '#e9d5ff',
     success: '#10b981',
     warning: '#f59e0b',
     error: '#ef4444',
-    icon: '#6b7280',
+    icon: '#a855f7',
     tabIconDefault: '#9ca3af',
-    tabIconSelected: brandColor,
+    tabIconSelected: primaryPurple,
     gold: '#fbbf24',
+    gradientStart: lightPink,
+    gradientEnd: lightPurple,
+    purple: primaryPurple,
+    pink: primaryPink,
   },
   dark: {
-    text: '#f9fafb',
-    textSecondary: '#9ca3af',
-    background: '#0f172a',
-    surface: '#1e293b',
-    surfaceSecondary: '#334155',
-    tint: brandColorDark,
-    border: '#334155',
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    background: '#ffffff',
+    surface: '#ffffff',
+    surfaceSecondary: '#faf5ff',
+    tint: primaryPurple,
+    accent: primaryPink,
+    border: '#e9d5ff',
     success: '#10b981',
     warning: '#f59e0b',
     error: '#ef4444',
-    icon: '#94a3b8',
-    tabIconDefault: '#64748b',
-    tabIconSelected: brandColorDark,
+    icon: '#a855f7',
+    tabIconDefault: '#9ca3af',
+    tabIconSelected: primaryPurple,
     gold: '#fbbf24',
+    gradientStart: lightPink,
+    gradientEnd: lightPurple,
+    purple: primaryPurple,
+    pink: primaryPink,
   },
 };
 
