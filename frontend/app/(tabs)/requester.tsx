@@ -31,6 +31,29 @@ export default function RequesterDashboard() {
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const handleTakeJob = (job: Job) => {
+    // Navigate to appropriate labeling screen based on task type
+    switch (job.taskType) {
+      case 'binary':
+        router.push(`/labeling/binary?jobId=${job.id}`);
+        break;
+      case 'multi-class':
+        router.push(`/labeling/multi-class?jobId=${job.id}`);
+        break;
+      case 'bounding-box':
+        router.push(`/labeling/bounding-box?jobId=${job.id}`);
+        break;
+      case 'segmentation':
+        router.push(`/labeling/segmentation?jobId=${job.id}`);
+        break;
+      case 'text-sentiment':
+        router.push(`/labeling/text-sentiment?jobId=${job.id}`);
+        break;
+      default:
+        console.warn('Unknown task type:', job.taskType);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -68,10 +91,10 @@ export default function RequesterDashboard() {
 
         {/* Jobs List */}
         <View style={styles.jobsList}>
-          {mockJobs.map((job) => (
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Available Jobs</Text>
+          {mockJobs.filter(j => j.status === 'active').map((job) => (
             <Card
               key={job.id}
-              onPress={() => router.push(`/job-details?id=${job.id}`)}
             >
               <View style={styles.jobHeader}>
                 <Text style={[styles.jobTitle, { color: colors.text }]}>{job.title}</Text>
@@ -112,6 +135,22 @@ export default function RequesterDashboard() {
                   </Text>
                   <ProgressBar progress={job.confidence} showLabel color={colors.success} />
                 </View>
+              </View>
+
+              <View style={styles.jobActions}>
+                <Button
+                  title="View Details"
+                  onPress={() => router.push(`/job-details?id=${job.id}`)}
+                  variant="outline"
+                  size="small"
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  title="Start Labeling"
+                  onPress={() => handleTakeJob(job)}
+                  size="small"
+                  style={{ flex: 1 }}
+                />
               </View>
             </Card>
           ))}
@@ -157,6 +196,16 @@ const styles = StyleSheet.create({
   },
   jobsList: {
     gap: Spacing.md,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+    marginBottom: Spacing.sm,
+  },
+  jobActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
   },
   jobHeader: {
     flexDirection: 'row',

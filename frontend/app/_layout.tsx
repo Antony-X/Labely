@@ -17,6 +17,11 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="labeling/binary" options={{ headerShown: false }} />
+        <Stack.Screen name="labeling/multi-class" options={{ headerShown: false }} />
+        <Stack.Screen name="labeling/bounding-box" options={{ headerShown: false }} />
+        <Stack.Screen name="labeling/segmentation" options={{ headerShown: false }} />
+        <Stack.Screen name="labeling/text-sentiment" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

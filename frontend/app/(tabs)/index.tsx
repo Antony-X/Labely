@@ -14,7 +14,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={[]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Section with Gradient */}
         <LinearGradient

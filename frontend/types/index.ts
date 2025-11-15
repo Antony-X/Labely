@@ -2,7 +2,7 @@
  * Labely App Type Definitions
  */
 
-export type TaskType = 'binary' | 'multi-class' | 'bounding-box' | 'segmentation' | 'object-detection';
+export type TaskType = 'binary' | 'multi-class' | 'bounding-box' | 'segmentation' | 'text-sentiment';
 
 export type JobStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 
@@ -33,7 +33,8 @@ export interface Task {
   id: string;
   jobId: string;
   taskType: TaskType;
-  imageUrl: string;
+  imageUrl?: string;
+  textContent?: string; // For text-sentiment tasks
   classes: string[];
   isGoldStandard?: boolean;
   correctAnswer?: string | string[]; // For gold standard items
