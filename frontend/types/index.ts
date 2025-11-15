@@ -2,7 +2,7 @@
  * Labely App Type Definitions
  */
 
-export type TaskType = 'binary' | 'multi' | 'object-detection';
+export type TaskType = 'binary' | 'multi-class' | 'bounding-box' | 'segmentation' | 'object-detection';
 
 export type JobStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 
