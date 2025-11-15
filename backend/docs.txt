@@ -1,1 +1,54 @@
-Nothing here.
+Base URL: http://[HOSTNAME]:[PORT]
+
+---
+
+GET /
+Description: Returns the contents of docs.txt for basic service confirmation.
+Response: HTML-wrapped documentation text.
+Status: 200 OK
+
+---
+
+GET /dataset/get?name=[dataset_name]
+Description: Retrieves the full JSON indexation file for a dataset.
+Query Parameters:
+name – Name of the dataset (without .json extension).
+Responses:
+200 OK: Returns the dataset JSON.
+404 Not Found: {"error": "Dataset \"[name]\" not found."}
+
+---
+
+GET /dataset/getimg?name=[dataset_name]&id=[item_id]
+Description: Serves an image belonging to a dataset item.
+Query Parameters:
+name – Dataset name.
+id – Integer index of the item.
+Responses:
+200 OK: Returns the image file with mimetype image/jpeg.
+400 Bad Request: {"error": "Invalid id"}
+404 Not Found: {"error": "Dataset not found"} or {"error": "Image not found"}
+
+---
+
+POST /dataset/setcat
+Description: Assigns a category to a dataset item.
+Request JSON:
+{
+    "name": "dataset_name",
+    "id": 0,
+    "label": "category_label"
+}
+Responses:
+200 OK: {"status": "ok", "assigned": [category_value]}
+400 Bad Request: {"error": "Unknown label"} or {"error": "Invalid id"}
+404 Not Found: {"error": "Dataset not found"}
+
+---
+
+Notes:
+* Dataset files must exist within DATASET_ROOT.
+* Dataset JSON must contain "categories" and "data" fields.
+* Category assignment maps human-readable labels to integer values.
+* Returned images are read directly from dataset-specific subdirectories.
+* Environment variables must define HOSTNAME, PORT, DEBUG, DATASET_ROOT.
