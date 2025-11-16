@@ -5,7 +5,7 @@
  */
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8000'; // Update this with your backend URL
+const API_BASE_URL = 'https://bios-wales-jackets-visits.trycloudflare.com';
 
 // Dataset names mapping
 export const DATASET_NAMES = {
@@ -37,12 +37,26 @@ class APIService {
    * Get dataset information
    */
   async getDataset(name: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/dataset/get?name=${encodeURIComponent(name)}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch dataset');
+    const url = `${this.baseUrl}/dataset/get?name=${encodeURIComponent(name)}`;
+    console.log('🔍 Fetching dataset from:', url);
+
+    try {
+      const response = await fetch(url);
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        throw new Error(`Failed to fetch dataset: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Dataset loaded:', data.dataset_name, '- Items:', data.data?.length);
+      return data;
+    } catch (error) {
+      console.error('❌ Fetch error:', error);
+      throw error;
     }
-    return response.json();
   }
 
   /**

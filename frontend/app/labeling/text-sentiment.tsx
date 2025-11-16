@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Dimensions,
   Animated,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -14,6 +15,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { apiService, DATASET_NAMES } from '@/services/api';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
@@ -27,30 +29,84 @@ export default function TextSentimentLabeling() {
 
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
   const [cardAnimation] = useState(new Animated.Value(0));
+  const [currentItemId, setCurrentItemId] = useState(0);
+  const [textContent, setTextContent] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [dataset, setDataset] = useState<any>(null);
 
-  const textContent = 'This product is absolutely amazing! Best purchase I\'ve ever made.';
   const sentiments = [
-    { label: 'Positive', icon: 'happy-outline', color: '#4ade80' },
-    { label: 'Negative', icon: 'sad-outline', color: '#f87171' },
-    { label: 'Neutral', icon: 'remove-circle-outline', color: '#94a3b8' },
+    { label: 'positive', icon: 'happy-outline', color: '#4ade80' },
+    { label: 'negative', icon: 'sad-outline', color: '#f87171' },
   ];
+
+  useEffect(() => {
+    loadDataset();
+  }, []);
+
+  const loadDataset = async () => {
+    try {
+      setLoading(true);
+      const datasetData = await apiService.getTextDataset(DATASET_NAMES.TEXT_SENTIMENT);
+      setDataset(datasetData);
+
+      if (datasetData.data && datasetData.data.length > 0) {
+        loadItem(0);
+      }
+    } catch (error) {
+      console.error('Failed to load dataset:', error);
+      // Fallback to mock data
+      setTextContent('This product is absolutely amazing! Best purchase I\'ve ever made.');
+      setLoading(false);
+    }
+  };
+
+  const loadItem = (itemId: number) => {
+    if (!dataset || !dataset.data[itemId]) return;
+
+    const item = dataset.data[itemId];
+    setTextContent(item.review || item.text || '');
+    setCurrentItemId(itemId);
+    setSelectedSentiment(null);
+    setLoading(false);
+  };
 
   const handleSelect = (sentiment: string) => {
     setSelectedSentiment(sentiment);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedSentiment) return;
 
-    // Animate card out
-    Animated.timing(cardAnimation, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      console.log('Selected sentiment:', selectedSentiment);
-      router.back();
-    });
+    // Submit to backend
+    if (dataset) {
+      try {
+        await apiService.setTextLabel(DATASET_NAMES.TEXT_SENTIMENT, currentItemId, selectedSentiment);
+      } catch (error) {
+        console.error('Failed to submit label:', error);
+      }
+    }
+
+    // Move to next item if available
+    if (dataset && currentItemId < dataset.data.length - 1) {
+      // Animate card out
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        cardAnimation.setValue(0);
+        loadItem(currentItemId + 1);
+      });
+    } else {
+      // All items labeled
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        router.back();
+      });
+    }
   };
 
   const cardTranslateY = cardAnimation.interpolate({
@@ -63,6 +119,17 @@ export default function TextSentimentLabeling() {
     outputRange: [1, 0.5, 0],
   });
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
@@ -71,7 +138,11 @@ export default function TextSentimentLabeling() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Text Sentiment</Text>
-        <View style={{ width: 24 }} />
+        {dataset && (
+          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            {currentItemId + 1}/{dataset.data.length}
+          </Text>
+        )}
       </View>
 
       {/* Instructions */}
@@ -177,6 +248,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -187,6 +267,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
+  },
+  progressText: {
+    fontSize: FontSizes.sm,
   },
   instructions: {
     padding: Spacing.md,

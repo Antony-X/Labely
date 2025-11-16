@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Animated,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -16,6 +17,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { apiService, DATASET_NAMES } from '@/services/api';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
@@ -30,9 +32,50 @@ export default function MultiClassLabeling() {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [customClass, setCustomClass] = useState('');
   const [cardAnimation] = useState(new Animated.Value(0));
+  const [currentItemId, setCurrentItemId] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [dataset, setDataset] = useState<any>(null);
+  const [classes, setClasses] = useState<string[]>([]);
 
-  const imageUrl = 'https://picsum.photos/400/300?random=3';
-  const classes = ['Electronics', 'Clothing', 'Food', 'Books', 'Toys', 'Other'];
+  useEffect(() => {
+    loadDataset();
+  }, []);
+
+  const loadDataset = async () => {
+    try {
+      setLoading(true);
+      const datasetData = await apiService.getDataset(DATASET_NAMES.MULTI_CLASS);
+      setDataset(datasetData);
+
+      if (datasetData.categories) {
+        // Extract class labels from categories
+        const classLabels = datasetData.categories.map((cat: any) => cat.label);
+        setClasses(classLabels);
+      }
+
+      if (datasetData.data && datasetData.data.length > 0) {
+        loadItem(0);
+      }
+    } catch (error) {
+      console.error('Failed to load dataset:', error);
+      // Fallback to mock data
+      setImageUrl('https://picsum.photos/400/300?random=3');
+      setClasses(['Happy', 'Sad', 'Angry', 'Surprised', 'Neutral', 'Other']);
+      setLoading(false);
+    }
+  };
+
+  const loadItem = (itemId: number) => {
+    if (!dataset || !dataset.data[itemId]) return;
+
+    const url = apiService.getImageUrl(DATASET_NAMES.MULTI_CLASS, itemId);
+    setImageUrl(url);
+    setCurrentItemId(itemId);
+    setSelectedClass(null);
+    setCustomClass('');
+    setLoading(false);
+  };
 
   const handleSelect = (className: string) => {
     setSelectedClass(className);
@@ -48,18 +91,39 @@ export default function MultiClassLabeling() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedClass) return;
 
-    // Animate card out
-    Animated.timing(cardAnimation, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      console.log('Selected class:', selectedClass);
-      router.back();
-    });
+    // Submit to backend
+    if (dataset) {
+      try {
+        await apiService.setCategory(DATASET_NAMES.MULTI_CLASS, currentItemId, selectedClass);
+      } catch (error) {
+        console.error('Failed to submit label:', error);
+      }
+    }
+
+    // Move to next item if available
+    if (dataset && currentItemId < dataset.data.length - 1) {
+      // Animate card out
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        cardAnimation.setValue(0);
+        loadItem(currentItemId + 1);
+      });
+    } else {
+      // All items labeled
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        router.back();
+      });
+    }
   };
 
   const cardTranslateY = cardAnimation.interpolate({
@@ -72,6 +136,17 @@ export default function MultiClassLabeling() {
     outputRange: [1, 0.5, 0],
   });
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
@@ -80,7 +155,11 @@ export default function MultiClassLabeling() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Multi-Class Label</Text>
-        <View style={{ width: 24 }} />
+        {dataset && (
+          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            {currentItemId + 1}/{dataset.data.length}
+          </Text>
+        )}
       </View>
 
       {/* Instructions */}
@@ -187,6 +266,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -197,6 +285,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
+  },
+  progressText: {
+    fontSize: FontSizes.sm,
   },
   instructions: {
     padding: Spacing.md,

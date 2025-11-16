@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,14 @@ import {
   Dimensions,
   Animated,
   PanResponder,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { apiService, DATASET_NAMES } from '@/services/api';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
@@ -27,11 +29,49 @@ export default function BinaryClassificationLabeling() {
   const { jobId } = useLocalSearchParams();
 
   const position = useRef(new Animated.ValueXY()).current;
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentItemId, setCurrentItemId] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [dataset, setDataset] = useState<any>(null);
+  const [leftLabel, setLeftLabel] = useState('');
+  const [rightLabel, setRightLabel] = useState('');
 
-  const imageUrl = 'https://picsum.photos/400/300?random=1';
-  const leftLabel = 'Cat';
-  const rightLabel = 'Dog';
+  useEffect(() => {
+    loadDataset();
+  }, []);
+
+  const loadDataset = async () => {
+    try {
+      setLoading(true);
+      const datasetData = await apiService.getDataset(DATASET_NAMES.BINARY);
+      setDataset(datasetData);
+
+      if (datasetData.categories && datasetData.categories.length >= 2) {
+        setLeftLabel(datasetData.categories[0].label);
+        setRightLabel(datasetData.categories[1].label);
+      }
+
+      if (datasetData.data && datasetData.data.length > 0) {
+        loadItem(0);
+      }
+    } catch (error) {
+      console.error('Failed to load dataset:', error);
+      // Fallback to mock data
+      setImageUrl('https://picsum.photos/400/300?random=1');
+      setLeftLabel('Cat');
+      setRightLabel('Dog');
+      setLoading(false);
+    }
+  };
+
+  const loadItem = (itemId: number) => {
+    if (!dataset || !dataset.data[itemId]) return;
+
+    const url = apiService.getImageUrl(DATASET_NAMES.BINARY, itemId);
+    setImageUrl(url);
+    setCurrentItemId(itemId);
+    setLoading(false);
+  };
 
   const rotate = position.x.interpolate({
     inputRange: [-width / 2, 0, width / 2],
@@ -95,14 +135,30 @@ export default function BinaryClassificationLabeling() {
     })
   ).current;
 
-  const handleChoice = (choice: string) => {
+  const handleChoice = async (choice: string) => {
     console.log('Selected:', choice);
+
+    // Submit to backend
+    if (dataset) {
+      try {
+        await apiService.setCategory(DATASET_NAMES.BINARY, currentItemId, choice);
+      } catch (error) {
+        console.error('Failed to submit label:', error);
+      }
+    }
+
     // Reset position for next card
     position.setValue({ x: 0, y: 0 });
-    // In real app, load next task or go back
-    setTimeout(() => {
-      router.back();
-    }, 100);
+
+    // Move to next item if available
+    if (dataset && currentItemId < dataset.data.length - 1) {
+      loadItem(currentItemId + 1);
+    } else {
+      // All items labeled
+      setTimeout(() => {
+        router.back();
+      }, 100);
+    }
   };
 
   const handleButtonPress = (choice: string) => {
@@ -115,6 +171,17 @@ export default function BinaryClassificationLabeling() {
     });
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
@@ -123,7 +190,11 @@ export default function BinaryClassificationLabeling() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Binary Classification</Text>
-        <View style={{ width: 24 }} />
+        {dataset && (
+          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            {currentItemId + 1}/{dataset.data.length}
+          </Text>
+        )}
       </View>
 
       {/* Instructions */}
@@ -234,6 +305,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -244,6 +324,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
+  },
+  progressText: {
+    fontSize: FontSizes.sm,
   },
   instructions: {
     padding: Spacing.md,
