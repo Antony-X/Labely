@@ -1,7 +1,7 @@
 import os
+import json
 import flask
 import flask_cors
-import json
 import dotenv
 
 dotenv.load_dotenv(dotenv_path=".env")
@@ -12,6 +12,14 @@ flask_cors.CORS(app, origins=["*"])
 @app.route("/", methods=["GET"])
 def root():
     return flask.Response(f"<pre>{open("docs.txt", "r").read()}</pre>", status=200)
+
+@app.route("/dataset/list", methods=["GET"])
+def dataset_list():
+    files = os.listdir(os.getenv("DATASET_ROOT"))
+    datasets = []
+    for file in files:
+        if file.endswith("json"): datasets.append(file[:-5])
+    return flask.jsonify(datasets), 200
 
 @app.route("/dataset/get", methods=["GET"])
 def dataset_get():
