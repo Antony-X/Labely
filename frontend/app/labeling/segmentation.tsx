@@ -137,6 +137,16 @@ export default function SegmentationLabeling() {
           </Svg>
         </View>
       </View>
+
+      {/* OK Button */}
+      <View style={styles.buttonContainer}>
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.okButton, { backgroundColor: colors.tint }]}
+        >
+          <Text style={styles.okButtonText}>OK</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -178,5 +188,25 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  buttonContainer: {
+    padding: Spacing.md,
+    paddingBottom: Spacing.xl,
+  },
+  okButton: {
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  okButtonText: {
+    color: '#fff',
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
   },
 });
