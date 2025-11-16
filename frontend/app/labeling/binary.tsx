@@ -292,7 +292,7 @@ export default function BinaryClassificationLabeling() {
           <Image
             source={{ uri: imageUrl }}
             style={styles.image}
-            resizeMode="contain"
+            resizeMode="cover"
             onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
           />
 
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   card: {
     width: CARD_WIDTH,
@@ -422,8 +422,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
   },
   labelOverlay: {
     position: 'absolute',
