@@ -237,7 +237,11 @@ export default function BinaryClassificationLabeling() {
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
-          <Image source={{ uri: 'https://picsum.photos/400/300?random=2' }} style={styles.image} />
+          <Image
+            source={{ uri: currentItemId < dataset.data.length - 1 ? apiService.getImageUrl(DATASET_NAMES.BINARY, currentItemId + 1) : 'https://picsum.photos/400/300?random=2' }}
+            style={styles.image}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Current card */}
@@ -252,7 +256,12 @@ export default function BinaryClassificationLabeling() {
             rotateAndTranslate,
           ]}
         >
-          <Image source={{ uri: imageUrl }} style={styles.image} />
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
+          />
 
           {/* Left Label Overlay */}
           <Animated.View

@@ -195,7 +195,12 @@ export default function MultiClassLabeling() {
               },
             ]}
           >
-            <Image source={{ uri: imageUrl }} style={styles.image} />
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.image}
+              resizeMode="contain"
+              onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
+            />
             <View style={styles.cardInfo}>
               <Text style={styles.taskLabel}>
                 What category is this?

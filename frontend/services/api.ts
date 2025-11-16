@@ -83,10 +83,17 @@ class APIService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to set category');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to set category');
     }
-    return response.json();
+
+    // Handle both text and JSON responses
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { success: true, message: text };
+    }
   }
 
   /**
@@ -132,10 +139,17 @@ class APIService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to set label');
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to set label');
     }
-    return response.json();
+
+    // Handle both text and JSON responses
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { success: true, message: text };
+    }
   }
 }
 
