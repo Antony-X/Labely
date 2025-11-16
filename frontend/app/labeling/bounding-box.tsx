@@ -52,10 +52,15 @@ export default function BoundingBoxLabeling() {
     try {
       setLoading(true);
       const datasetData = await apiService.getDataset(DATASET_NAMES.BOUNDING_BOX);
+      console.log('📦 Bounding box dataset loaded:', datasetData);
       setDataset(datasetData);
 
       if (datasetData.data && datasetData.data.length > 0) {
-        loadItem(0);
+        console.log('📥 Loading first bounding box item...');
+        loadItem(datasetData, 0);
+      } else {
+        console.log('⚠️ No data in bounding box dataset');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to load dataset:', error);
@@ -65,14 +70,23 @@ export default function BoundingBoxLabeling() {
     }
   };
 
-  const loadItem = (itemId: number) => {
-    if (!dataset || !dataset.data[itemId]) return;
+  const loadItem = (datasetData: any, itemId: number) => {
+    console.log('🔄 loadItem called with itemId:', itemId);
+    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
+      console.log('❌ No data for item:', itemId);
+      return;
+    }
 
     const url = apiService.getImageUrl(DATASET_NAMES.BOUNDING_BOX, itemId);
+    console.log('🖼️ Bounding box image URL:', url);
     setImageUrl(url);
     setCurrentItemId(itemId);
     setBoxes([]);
+    setCurrentBox(null);
+    setDrawingBox(null);
+    setIsDrawingMode(false);
     setLoading(false);
+    console.log('✅ Bounding box item loaded');
   };
 
   const panResponder = useRef(
@@ -119,13 +133,17 @@ export default function BoundingBoxLabeling() {
   };
 
   const handleSubmit = async () => {
-    console.log('Submitting boxes:', boxes);
+    console.log('Submitting bounding boxes:', boxes);
+
+    // TODO: Submit boxes to backend when API is ready
 
     // Move to next item if available
     if (dataset && currentItemId < dataset.data.length - 1) {
-      loadItem(currentItemId + 1);
+      console.log(`📥 Loading next bounding box item: ${currentItemId + 1}/${dataset.data.length}`);
+      loadItem(dataset, currentItemId + 1);
       setIsDrawingMode(false);
     } else {
+      console.log('🎉 All bounding box items completed!');
       router.back();
     }
   };
@@ -174,7 +192,12 @@ export default function BoundingBoxLabeling() {
       {/* Canvas */}
       <View style={styles.canvasContainer}>
         <View style={styles.imageWrapper} {...panResponder.panHandlers}>
-          <Image source={{ uri: imageUrl }} style={styles.image} />
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
+          />
           {/* Render existing boxes */}
           {boxes.map((box) => (
             <View

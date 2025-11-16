@@ -148,28 +148,30 @@ export default function BinaryClassificationLabeling() {
   ).current;
 
   const handleChoice = async (choice: string) => {
-    console.log('Selected:', choice);
+    console.log('Selected:', choice, 'Left:', leftLabel, 'Right:', rightLabel);
 
     // Submit to backend
     if (dataset) {
       try {
         await apiService.setCategory(DATASET_NAMES.BINARY, currentItemId, choice);
+        console.log('✅ Label submitted successfully');
       } catch (error) {
         console.error('Failed to submit label:', error);
       }
     }
 
-    // Reset position for next card
-    position.setValue({ x: 0, y: 0 });
-
     // Move to next item if available
     if (dataset && currentItemId < dataset.data.length - 1) {
+      console.log(`📥 Loading next item: ${currentItemId + 1}/${dataset.data.length}`);
+      // Reset position for next card
+      position.setValue({ x: 0, y: 0 });
       loadItem(dataset, currentItemId + 1);
     } else {
       // All items labeled
+      console.log('🎉 All items labeled! Going back...');
       setTimeout(() => {
         router.back();
-      }, 100);
+      }, 500);
     }
   };
 

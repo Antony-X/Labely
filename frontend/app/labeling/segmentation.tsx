@@ -55,10 +55,15 @@ export default function SegmentationLabeling() {
     try {
       setLoading(true);
       const datasetData = await apiService.getDataset(DATASET_NAMES.SEGMENTATION);
+      console.log('📦 Segmentation dataset loaded:', datasetData);
       setDataset(datasetData);
 
       if (datasetData.data && datasetData.data.length > 0) {
-        loadItem(0);
+        console.log('📥 Loading first segmentation item...');
+        loadItem(datasetData, 0);
+      } else {
+        console.log('⚠️ No data in segmentation dataset');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to load dataset:', error);
@@ -68,14 +73,21 @@ export default function SegmentationLabeling() {
     }
   };
 
-  const loadItem = (itemId: number) => {
-    if (!dataset || !dataset.data[itemId]) return;
+  const loadItem = (datasetData: any, itemId: number) => {
+    console.log('🔄 loadItem called with itemId:', itemId);
+    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
+      console.log('❌ No data for item:', itemId);
+      return;
+    }
 
     const url = apiService.getImageUrl(DATASET_NAMES.SEGMENTATION, itemId);
+    console.log('🖼️ Segmentation image URL:', url);
     setImageUrl(url);
     setCurrentItemId(itemId);
     setPaths([]);
+    setIsDrawingMode(false);
     setLoading(false);
+    console.log('✅ Segmentation item loaded');
   };
 
   const panResponder = useRef(
@@ -128,13 +140,17 @@ export default function SegmentationLabeling() {
   };
 
   const handleSubmit = async () => {
-    console.log('Submitting paths:', paths);
+    console.log('Submitting segmentation paths:', paths);
+
+    // TODO: Submit paths to backend when API is ready
 
     // Move to next item if available
     if (dataset && currentItemId < dataset.data.length - 1) {
-      loadItem(currentItemId + 1);
+      console.log(`📥 Loading next segmentation item: ${currentItemId + 1}/${dataset.data.length}`);
+      loadItem(dataset, currentItemId + 1);
       setIsDrawingMode(false);
     } else {
+      console.log('🎉 All segmentation items completed!');
       router.back();
     }
   };
@@ -179,7 +195,12 @@ export default function SegmentationLabeling() {
       {/* Canvas */}
       <View style={styles.canvasContainer}>
         <View style={styles.imageWrapper} {...panResponder.panHandlers}>
-          <Image source={{ uri: imageUrl }} style={styles.image} />
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
+          />
           <Svg style={StyleSheet.absoluteFill}>
             {paths.map((pathData, index) => (
               <Path
