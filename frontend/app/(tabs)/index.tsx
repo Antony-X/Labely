@@ -1,98 +1,273 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import { Button } from '@/components/ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function Home() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const router = useRouter();
 
-export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Hero Section with Gradient */}
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <Text style={[styles.logo, { color: colors.purple }]}>Labely</Text>
+          <Text style={[styles.tagline, { color: colors.text }]}>
+            AI Training Data,{'\n'}Gamified
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Label data. Earn rewards. Build the future.
+          </Text>
+        </LinearGradient>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.statNumber, { color: colors.purple }]}>1M+</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Labels</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.statNumber, { color: colors.pink }]}>10K+</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Labelers</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.statNumber, { color: colors.purple }]}>98%</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Accuracy</Text>
+          </View>
+        </View>
+
+        {/* Action Cards */}
+        <View style={styles.content}>
+          <LinearGradient
+            colors={[colors.purple, colors.pink]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.mainCard}
+          >
+            <Ionicons name="flash" size={48} color="#fff" />
+            <Text style={styles.mainCardTitle}>Start Labeling</Text>
+            <Text style={styles.mainCardDesc}>Swipe, label, earn rewards instantly</Text>
+            <Button
+              title="Label Now"
+              onPress={() => router.push('/labeler')}
+              variant="outline"
+              style={styles.mainCardButton}
+            />
+          </LinearGradient>
+
+          <View style={styles.row}>
+            <View style={[styles.smallCard, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="trophy" size={32} color={colors.purple} />
+              <Text style={[styles.smallCardTitle, { color: colors.text }]}>Leaderboard</Text>
+              <Button
+                title="View Ranks"
+                variant="outline"
+                size="small"
+                onPress={() => router.push('/leaderboard')}
+                style={{ marginTop: Spacing.sm }}
+              />
+            </View>
+
+            <View style={[styles.smallCard, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="briefcase" size={32} color={colors.pink} />
+              <Text style={[styles.smallCardTitle, { color: colors.text }]}>My Jobs</Text>
+              <Button
+                title="View Jobs"
+                variant="outline"
+                size="small"
+                onPress={() => router.push('/requester')}
+                style={{ marginTop: Spacing.sm }}
+              />
+            </View>
+          </View>
+
+          {/* Features */}
+          <View style={styles.features}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>How It Works</Text>
+
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: colors.gradientStart }]}>
+                <Ionicons name="images" size={24} color={colors.purple} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={[styles.featureTitle, { color: colors.text }]}>Label Images</Text>
+                <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>
+                  Binary, multi-class, bounding boxes, and segmentation
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: colors.gradientEnd }]}>
+                <Ionicons name="trending-up" size={24} color={colors.pink} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={[styles.featureTitle, { color: colors.text }]}>Build Your ELO</Text>
+                <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>
+                  Increase accuracy, maintain streaks, climb the ranks
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: colors.gradientStart }]}>
+                <Ionicons name="wallet" size={24} color={colors.purple} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={[styles.featureTitle, { color: colors.text }]}>Earn Money</Text>
+                <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>
+                  Get paid instantly for each accurate label
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+  },
+  hero: {
     alignItems: 'center',
-    gap: 8,
+    paddingVertical: Spacing.xxl * 2,
+    paddingHorizontal: Spacing.lg,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  logo: {
+    fontSize: 64,
+    fontWeight: '900',
+    letterSpacing: -3,
+    marginBottom: Spacing.md,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  tagline: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 34,
+    marginBottom: Spacing.sm,
+  },
+  subtitle: {
+    fontSize: FontSizes.md,
+    textAlign: 'center',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: '800',
+    marginBottom: Spacing.xs,
+  },
+  statLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+  },
+  content: {
+    padding: Spacing.lg,
+    gap: Spacing.lg,
+  },
+  mainCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl * 1.5,
+    alignItems: 'center',
+    shadowColor: '#a855f7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  mainCardTitle: {
+    fontSize: FontSizes.xxl,
+    fontWeight: '800',
+    color: '#fff',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  mainCardDesc: {
+    fontSize: FontSizes.md,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: Spacing.lg,
+    textAlign: 'center',
+  },
+  mainCardButton: {
+    backgroundColor: '#fff',
+    borderColor: '#fff',
+    paddingHorizontal: Spacing.xl,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  smallCard: {
+    flex: 1,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+  },
+  smallCardTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '700',
+    marginTop: Spacing.sm,
+  },
+  features: {
+    marginTop: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: '800',
+    marginBottom: Spacing.lg,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    marginBottom: Spacing.lg,
+    alignItems: 'flex-start',
+  },
+  featureIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  featureText: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
+  },
+  featureDesc: {
+    fontSize: FontSizes.sm,
+    lineHeight: 20,
   },
 });

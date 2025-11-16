@@ -1,41 +1,64 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Labely App Theme - White with Pink/Purple Gradients
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const primaryPurple = '#a855f7'; // Purple
+const primaryPink = '#ec4899'; // Pink
+const lightPurple = '#e9d5ff'; // Light purple
+const lightPink = '#fce7f3'; // Light pink
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    background: '#ffffff',
+    surface: '#ffffff',
+    surfaceSecondary: '#faf5ff',
+    tint: primaryPurple,
+    accent: primaryPink,
+    border: '#e9d5ff',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    icon: '#a855f7',
+    tabIconDefault: '#9ca3af',
+    tabIconSelected: primaryPurple,
+    gold: '#fbbf24',
+    gradientStart: lightPink,
+    gradientEnd: lightPurple,
+    purple: primaryPurple,
+    pink: primaryPink,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    background: '#ffffff',
+    surface: '#ffffff',
+    surfaceSecondary: '#faf5ff',
+    tint: primaryPurple,
+    accent: primaryPink,
+    border: '#e9d5ff',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    icon: '#a855f7',
+    tabIconDefault: '#9ca3af',
+    tabIconSelected: primaryPurple,
+    gold: '#fbbf24',
+    gradientStart: lightPink,
+    gradientEnd: lightPurple,
+    purple: primaryPurple,
+    pink: primaryPink,
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
@@ -51,3 +74,30 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+
+export const BorderRadius = {
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+  full: 9999,
+};
+
+export const FontSizes = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+};
