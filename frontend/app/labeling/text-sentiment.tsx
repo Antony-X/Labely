@@ -47,10 +47,15 @@ export default function TextSentimentLabeling() {
     try {
       setLoading(true);
       const datasetData = await apiService.getTextDataset(DATASET_NAMES.TEXT_SENTIMENT);
+      console.log('📦 Dataset data:', datasetData);
       setDataset(datasetData);
 
       if (datasetData.data && datasetData.data.length > 0) {
-        loadItem(0);
+        console.log('📥 Loading first item...');
+        loadItem(datasetData, 0);
+      } else {
+        console.log('⚠️ No data in dataset');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to load dataset:', error);
@@ -60,14 +65,19 @@ export default function TextSentimentLabeling() {
     }
   };
 
-  const loadItem = (itemId: number) => {
-    if (!dataset || !dataset.data[itemId]) return;
+  const loadItem = (datasetData: any, itemId: number) => {
+    console.log('🔄 loadItem called with itemId:', itemId);
+    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
+      console.log('❌ No data for item:', itemId);
+      return;
+    }
 
-    const item = dataset.data[itemId];
+    const item = datasetData.data[itemId];
     setTextContent(item.review || item.text || '');
     setCurrentItemId(itemId);
     setSelectedSentiment(null);
     setLoading(false);
+    console.log('✅ Loading complete, showing UI');
   };
 
   const handleSelect = (sentiment: string) => {
@@ -95,7 +105,7 @@ export default function TextSentimentLabeling() {
         useNativeDriver: true,
       }).start(() => {
         cardAnimation.setValue(0);
-        loadItem(currentItemId + 1);
+        loadItem(dataset, currentItemId + 1);
       });
     } else {
       // All items labeled

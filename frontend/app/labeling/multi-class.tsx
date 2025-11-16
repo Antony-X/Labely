@@ -46,16 +46,22 @@ export default function MultiClassLabeling() {
     try {
       setLoading(true);
       const datasetData = await apiService.getDataset(DATASET_NAMES.MULTI_CLASS);
+      console.log('📦 Dataset data:', datasetData);
       setDataset(datasetData);
 
       if (datasetData.categories) {
         // Extract class labels from categories
         const classLabels = datasetData.categories.map((cat: any) => cat.label);
         setClasses(classLabels);
+        console.log('🏷️ Classes set:', classLabels);
       }
 
       if (datasetData.data && datasetData.data.length > 0) {
-        loadItem(0);
+        console.log('📥 Loading first item...');
+        loadItem(datasetData, 0);
+      } else {
+        console.log('⚠️ No data in dataset');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to load dataset:', error);
@@ -66,15 +72,21 @@ export default function MultiClassLabeling() {
     }
   };
 
-  const loadItem = (itemId: number) => {
-    if (!dataset || !dataset.data[itemId]) return;
+  const loadItem = (datasetData: any, itemId: number) => {
+    console.log('🔄 loadItem called with itemId:', itemId);
+    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
+      console.log('❌ No data for item:', itemId);
+      return;
+    }
 
     const url = apiService.getImageUrl(DATASET_NAMES.MULTI_CLASS, itemId);
+    console.log('🖼️ Image URL:', url);
     setImageUrl(url);
     setCurrentItemId(itemId);
     setSelectedClass(null);
     setCustomClass('');
     setLoading(false);
+    console.log('✅ Loading complete, showing UI');
   };
 
   const handleSelect = (className: string) => {
@@ -112,7 +124,7 @@ export default function MultiClassLabeling() {
         useNativeDriver: true,
       }).start(() => {
         cardAnimation.setValue(0);
-        loadItem(currentItemId + 1);
+        loadItem(dataset, currentItemId + 1);
       });
     } else {
       // All items labeled

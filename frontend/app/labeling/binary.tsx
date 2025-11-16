@@ -44,15 +44,21 @@ export default function BinaryClassificationLabeling() {
     try {
       setLoading(true);
       const datasetData = await apiService.getDataset(DATASET_NAMES.BINARY);
+      console.log('📦 Dataset data:', datasetData);
       setDataset(datasetData);
 
       if (datasetData.categories && datasetData.categories.length >= 2) {
         setLeftLabel(datasetData.categories[0].label);
         setRightLabel(datasetData.categories[1].label);
+        console.log('🏷️ Labels set:', datasetData.categories[0].label, datasetData.categories[1].label);
       }
 
       if (datasetData.data && datasetData.data.length > 0) {
-        loadItem(0);
+        console.log('📥 Loading first item...');
+        loadItem(datasetData, 0);
+      } else {
+        console.log('⚠️ No data in dataset');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to load dataset:', error);
@@ -64,13 +70,19 @@ export default function BinaryClassificationLabeling() {
     }
   };
 
-  const loadItem = (itemId: number) => {
-    if (!dataset || !dataset.data[itemId]) return;
+  const loadItem = (datasetData: any, itemId: number) => {
+    console.log('🔄 loadItem called with itemId:', itemId);
+    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
+      console.log('❌ No data for item:', itemId);
+      return;
+    }
 
     const url = apiService.getImageUrl(DATASET_NAMES.BINARY, itemId);
+    console.log('🖼️ Image URL:', url);
     setImageUrl(url);
     setCurrentItemId(itemId);
     setLoading(false);
+    console.log('✅ Loading complete, showing UI');
   };
 
   const rotate = position.x.interpolate({
@@ -152,7 +164,7 @@ export default function BinaryClassificationLabeling() {
 
     // Move to next item if available
     if (dataset && currentItemId < dataset.data.length - 1) {
-      loadItem(currentItemId + 1);
+      loadItem(dataset, currentItemId + 1);
     } else {
       // All items labeled
       setTimeout(() => {
