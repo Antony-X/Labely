@@ -36,6 +36,11 @@ export default function BinaryClassificationLabeling() {
   const [leftLabel, setLeftLabel] = useState('');
   const [rightLabel, setRightLabel] = useState('');
 
+  // Use refs to ensure latest label values in callbacks
+  const leftLabelRef = useRef('');
+  const rightLabelRef = useRef('');
+  const datasetRef = useRef<any>(null);
+
   useEffect(() => {
     loadDataset();
   }, []);
@@ -48,9 +53,14 @@ export default function BinaryClassificationLabeling() {
       setDataset(datasetData);
 
       if (datasetData.categories && datasetData.categories.length >= 2) {
-        setLeftLabel(datasetData.categories[0].label);
-        setRightLabel(datasetData.categories[1].label);
-        console.log('🏷️ Labels set:', datasetData.categories[0].label, datasetData.categories[1].label);
+        const left = datasetData.categories[0].label;
+        const right = datasetData.categories[1].label;
+        setLeftLabel(left);
+        setRightLabel(right);
+        leftLabelRef.current = left;
+        rightLabelRef.current = right;
+        datasetRef.current = datasetData;
+        console.log('🏷️ Labels set:', left, right);
       }
 
       if (datasetData.data && datasetData.data.length > 0) {
@@ -125,7 +135,13 @@ export default function BinaryClassificationLabeling() {
             toValue: { x: width + 100, y: gestureState.dy },
             useNativeDriver: false,
           }).start(() => {
-            handleChoice(rightLabel);
+            const label = rightLabelRef.current;
+            console.log('Swipe right, using label:', label);
+            if (label) {
+              handleChoice(label);
+            } else {
+              console.error('❌ Right label is empty!');
+            }
           });
         } else if (gestureState.dx < -SWIPE_THRESHOLD) {
           // Swiped left
@@ -133,7 +149,13 @@ export default function BinaryClassificationLabeling() {
             toValue: { x: -width - 100, y: gestureState.dy },
             useNativeDriver: false,
           }).start(() => {
-            handleChoice(leftLabel);
+            const label = leftLabelRef.current;
+            console.log('Swipe left, using label:', label);
+            if (label) {
+              handleChoice(label);
+            } else {
+              console.error('❌ Left label is empty!');
+            }
           });
         } else {
           // Return to original position
@@ -148,24 +170,33 @@ export default function BinaryClassificationLabeling() {
   ).current;
 
   const handleChoice = async (choice: string) => {
-    console.log('Selected:', choice, 'Left:', leftLabel, 'Right:', rightLabel);
+    console.log('✨ handleChoice called with:', choice);
+
+    if (!choice || choice.trim() === '') {
+      console.error('❌ Empty choice, aborting');
+      return;
+    }
+
+    const currentDataset = datasetRef.current;
+    if (!currentDataset) {
+      console.error('❌ No dataset available');
+      return;
+    }
 
     // Submit to backend
-    if (dataset) {
-      try {
-        await apiService.setCategory(DATASET_NAMES.BINARY, currentItemId, choice);
-        console.log('✅ Label submitted successfully');
-      } catch (error) {
-        console.error('Failed to submit label:', error);
-      }
+    try {
+      await apiService.setCategory(DATASET_NAMES.BINARY, currentItemId, choice);
+      console.log('✅ Label submitted successfully');
+    } catch (error) {
+      console.error('❌ Failed to submit label:', error);
     }
 
     // Move to next item if available
-    if (dataset && currentItemId < dataset.data.length - 1) {
-      console.log(`📥 Loading next item: ${currentItemId + 1}/${dataset.data.length}`);
+    if (currentItemId < currentDataset.data.length - 1) {
+      console.log(`📥 Loading next item: ${currentItemId + 1}/${currentDataset.data.length}`);
       // Reset position for next card
       position.setValue({ x: 0, y: 0 });
-      loadItem(dataset, currentItemId + 1);
+      loadItem(currentDataset, currentItemId + 1);
     } else {
       // All items labeled
       console.log('🎉 All items labeled! Going back...');

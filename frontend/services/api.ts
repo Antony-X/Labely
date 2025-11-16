@@ -5,7 +5,7 @@
  */
 
 // API Configuration
-const API_BASE_URL = 'https://bios-wales-jackets-visits.trycloudflare.com';
+const API_BASE_URL = 'https://finite-picked-dropped-coverage.trycloudflare.com';
 
 // Dataset names mapping
 export const DATASET_NAMES = {
