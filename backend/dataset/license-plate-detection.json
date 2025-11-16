@@ -1,0 +1,45 @@
+{
+    "dataset_name": "license-plate-detection/",
+    "categories": [
+        {
+            "label": "first",
+            "value": 0
+        },
+        {
+            "label": "second",
+            "value": 1
+        }
+    ],
+    "data": [
+        {
+            "id": 0,
+            "filename": "0.jpg",
+            "category": -1
+        },
+        {
+            "id": 1,
+            "filename": "5.png",
+            "category": -1
+        },
+        {
+            "id": 2,
+            "filename": "3.png",
+            "category": -1
+        },
+        {
+            "id": 3,
+            "filename": "2.jpg",
+            "category": -1
+        },
+        {
+            "id": 4,
+            "filename": "4.png",
+            "category": -1
+        },
+        {
+            "id": 5,
+            "filename": "1.jpg",
+            "category": -1
+        }
+    ]
+}
