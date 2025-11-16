@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   PanResponder,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -15,8 +16,9 @@ import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
+import { apiService, DATASET_NAMES } from '@/services/api';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface Point {
   x: number;
@@ -36,11 +38,45 @@ export default function SegmentationLabeling() {
 
   const [paths, setPaths] = useState<PathData[]>([]);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
-  const [brushSize, setBrushSize] = useState(20);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [currentItemId, setCurrentItemId] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [dataset, setDataset] = useState<any>(null);
 
-  const imageUrl = 'https://picsum.photos/400/300?random=6';
+  const brushSize = 20; // Fixed brush size
   const drawColor = colors.tint;
+
+  useEffect(() => {
+    loadDataset();
+  }, []);
+
+  const loadDataset = async () => {
+    try {
+      setLoading(true);
+      const datasetData = await apiService.getDataset(DATASET_NAMES.SEGMENTATION);
+      setDataset(datasetData);
+
+      if (datasetData.data && datasetData.data.length > 0) {
+        loadItem(0);
+      }
+    } catch (error) {
+      console.error('Failed to load dataset:', error);
+      // Fallback to mock data
+      setImageUrl('https://picsum.photos/400/300?random=6');
+      setLoading(false);
+    }
+  };
+
+  const loadItem = (itemId: number) => {
+    if (!dataset || !dataset.data[itemId]) return;
+
+    const url = apiService.getImageUrl(DATASET_NAMES.SEGMENTATION, itemId);
+    setImageUrl(url);
+    setCurrentItemId(itemId);
+    setPaths([]);
+    setLoading(false);
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -67,7 +103,7 @@ export default function SegmentationLabeling() {
           ]);
           setCurrentPath([]);
         }
-        setIsDrawingMode(false);
+        // Keep drawing mode active
       },
     })
   ).current;
@@ -91,14 +127,32 @@ export default function SegmentationLabeling() {
     setCurrentPath([]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Submitting paths:', paths);
-    router.back();
+
+    // Move to next item if available
+    if (dataset && currentItemId < dataset.data.length - 1) {
+      loadItem(currentItemId + 1);
+      setIsDrawingMode(false);
+    } else {
+      router.back();
+    }
   };
 
-  const handleDrawMode = () => {
-    setIsDrawingMode(true);
+  const handleToggleDrawMode = () => {
+    setIsDrawingMode(!isDrawingMode);
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -117,7 +171,7 @@ export default function SegmentationLabeling() {
       <View style={[styles.instructions, { backgroundColor: colors.surfaceSecondary }]}>
         <Text style={[styles.instructionsText, { color: colors.text }]}>
           {isDrawingMode
-            ? 'Paint over objects to segment them'
+            ? 'Drawing mode active - paint over objects to segment them'
             : `Tap "Draw Segmentation" to start drawing`}
         </Text>
       </View>
@@ -154,49 +208,24 @@ export default function SegmentationLabeling() {
         </View>
       </View>
 
-      {/* Brush Size */}
-      <View style={styles.brushControl}>
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-          Brush Size: {brushSize}
-        </Text>
-        <View style={styles.brushSizes}>
-          {[10, 20, 30, 40].map((size) => (
-            <Pressable
-              key={size}
-              onPress={() => setBrushSize(size)}
-              style={[
-                styles.brushSizeButton,
-                {
-                  backgroundColor: brushSize === size ? colors.tint : colors.surface,
-                },
-              ]}
-            >
-              <Text style={[styles.brushSizeText, { color: brushSize === size ? '#fff' : colors.text }]}>
-                {size}
-              </Text>
-            </Pressable>
-          ))}
+      {/* Progress */}
+      {dataset && (
+        <View style={styles.progressContainer}>
+          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            Image {currentItemId + 1} of {dataset.data.length}
+          </Text>
         </View>
-      </View>
+      )}
 
       {/* Actions */}
       <View style={styles.actions}>
-        {!isDrawingMode && (
-          <Button
-            title="Draw Segmentation"
-            onPress={handleDrawMode}
-            style={{ flex: 1 }}
-            icon="brush-outline"
-          />
-        )}
-        {isDrawingMode && (
-          <View style={styles.drawingModeIndicator}>
-            <Ionicons name="hand-left" size={24} color={colors.tint} />
-            <Text style={[styles.drawingModeText, { color: colors.tint }]}>
-              Drawing mode active - paint on image
-            </Text>
-          </View>
-        )}
+        <Button
+          title={isDrawingMode ? "Stop Drawing" : "Draw Segmentation"}
+          onPress={handleToggleDrawMode}
+          style={{ flex: 1 }}
+          variant={isDrawingMode ? "outline" : "primary"}
+          icon={isDrawingMode ? "stop-circle-outline" : "brush-outline"}
+        />
       </View>
 
       <View style={styles.bottomActions}>
@@ -221,6 +250,15 @@ export default function SegmentationLabeling() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
   },
   header: {
     flexDirection: 'row',
@@ -256,43 +294,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  brushControl: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  sectionLabel: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  brushSizes: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  brushSizeButton: {
-    flex: 1,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+  progressContainer: {
     alignItems: 'center',
+    paddingVertical: Spacing.sm,
   },
-  brushSizeText: {
+  progressText: {
     fontSize: FontSizes.sm,
-    fontWeight: '600',
   },
   actions: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-  },
-  drawingModeIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
-  },
-  drawingModeText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
   },
   bottomActions: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   PanResponder,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -14,6 +15,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { apiService, DATASET_NAMES } from '@/services/api';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width - 32;
@@ -37,8 +39,41 @@ export default function BoundingBoxLabeling() {
   const [drawingBox, setDrawingBox] = useState<{ startX: number; startY: number } | null>(null);
   const [currentBox, setCurrentBox] = useState<Box | null>(null);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [currentItemId, setCurrentItemId] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [dataset, setDataset] = useState<any>(null);
 
-  const imageUrl = 'https://picsum.photos/400/300?random=4';
+  useEffect(() => {
+    loadDataset();
+  }, []);
+
+  const loadDataset = async () => {
+    try {
+      setLoading(true);
+      const datasetData = await apiService.getDataset(DATASET_NAMES.BOUNDING_BOX);
+      setDataset(datasetData);
+
+      if (datasetData.data && datasetData.data.length > 0) {
+        loadItem(0);
+      }
+    } catch (error) {
+      console.error('Failed to load dataset:', error);
+      // Fallback to mock data
+      setImageUrl('https://picsum.photos/400/300?random=4');
+      setLoading(false);
+    }
+  };
+
+  const loadItem = (itemId: number) => {
+    if (!dataset || !dataset.data[itemId]) return;
+
+    const url = apiService.getImageUrl(DATASET_NAMES.BOUNDING_BOX, itemId);
+    setImageUrl(url);
+    setCurrentItemId(itemId);
+    setBoxes([]);
+    setLoading(false);
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -54,15 +89,15 @@ export default function BoundingBoxLabeling() {
         const { locationX, locationY } = evt.nativeEvent;
         const x = Math.min(drawingBox.startX, locationX);
         const y = Math.min(drawingBox.startY, locationY);
-        const width = Math.abs(locationX - drawingBox.startX);
-        const height = Math.abs(locationY - drawingBox.startY);
+        const boxWidth = Math.abs(locationX - drawingBox.startX);
+        const boxHeight = Math.abs(locationY - drawingBox.startY);
 
         setCurrentBox({
           id: 'temp',
           x,
           y,
-          width,
-          height,
+          width: boxWidth,
+          height: boxHeight,
         });
       },
       onPanResponderRelease: () => {
@@ -74,7 +109,7 @@ export default function BoundingBoxLabeling() {
         }
         setDrawingBox(null);
         setCurrentBox(null);
-        setIsDrawingMode(false);
+        // Keep drawing mode active so user can draw multiple boxes
       },
     })
   ).current;
@@ -83,18 +118,36 @@ export default function BoundingBoxLabeling() {
     setBoxes((prev) => prev.filter((box) => box.id !== id));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Submitting boxes:', boxes);
-    router.back();
+
+    // Move to next item if available
+    if (dataset && currentItemId < dataset.data.length - 1) {
+      loadItem(currentItemId + 1);
+      setIsDrawingMode(false);
+    } else {
+      router.back();
+    }
   };
 
   const handleClear = () => {
     setBoxes([]);
   };
 
-  const handleDrawMode = () => {
-    setIsDrawingMode(true);
+  const handleToggleDrawMode = () => {
+    setIsDrawingMode(!isDrawingMode);
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.tint} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -113,7 +166,7 @@ export default function BoundingBoxLabeling() {
       <View style={[styles.instructions, { backgroundColor: colors.surfaceSecondary }]}>
         <Text style={[styles.instructionsText, { color: colors.text }]}>
           {isDrawingMode
-            ? 'Draw a box by dragging on the image'
+            ? 'Drawing mode active - drag on the image to create boxes'
             : `Tap "Draw Bounding Box" to start drawing`}
         </Text>
       </View>
@@ -163,38 +216,34 @@ export default function BoundingBoxLabeling() {
         </View>
       </View>
 
-      {/* Box Count */}
+      {/* Box Count & Progress */}
       <View style={styles.boxCount}>
         <Ionicons name="cube-outline" size={20} color={colors.text} />
         <Text style={[styles.boxCountText, { color: colors.text }]}>
           {boxes.length} box{boxes.length !== 1 ? 'es' : ''} drawn
         </Text>
+        {dataset && (
+          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
+            {' • '}{currentItemId + 1}/{dataset.data.length}
+          </Text>
+        )}
       </View>
 
       {/* Actions */}
       <View style={styles.actions}>
-        {!isDrawingMode && (
-          <Button
-            title="Draw Bounding Box"
-            onPress={handleDrawMode}
-            style={{ flex: 1 }}
-            icon="add-circle-outline"
-          />
-        )}
-        {isDrawingMode && (
-          <View style={styles.drawingModeIndicator}>
-            <Ionicons name="hand-left" size={24} color={colors.tint} />
-            <Text style={[styles.drawingModeText, { color: colors.tint }]}>
-              Drawing mode active - drag on image
-            </Text>
-          </View>
-        )}
+        <Button
+          title={isDrawingMode ? "Stop Drawing" : "Draw Bounding Box"}
+          onPress={handleToggleDrawMode}
+          style={{ flex: 1 }}
+          variant={isDrawingMode ? "outline" : "primary"}
+          icon={isDrawingMode ? "stop-circle-outline" : "add-circle-outline"}
+        />
       </View>
 
       <View style={styles.bottomActions}>
         <Button
           title="Skip"
-          onPress={() => router.back()}
+          onPress={handleSubmit}
           variant="outline"
           style={{ flex: 1 }}
         />
@@ -212,6 +261,15 @@ export default function BoundingBoxLabeling() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
   },
   header: {
     flexDirection: 'row',
@@ -267,27 +325,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.sm,
+    gap: Spacing.xs,
     paddingVertical: Spacing.sm,
   },
   boxCountText: {
     fontSize: FontSizes.sm,
     fontWeight: '600',
   },
+  progressText: {
+    fontSize: FontSizes.sm,
+  },
   actions: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-  },
-  drawingModeIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
-  },
-  drawingModeText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
   },
   bottomActions: {
     flexDirection: 'row',
