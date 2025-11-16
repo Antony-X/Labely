@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,13 @@ import {
   Pressable,
   Dimensions,
   PanResponder,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
-import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import { apiService, DATASET_NAMES } from '@/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -34,73 +31,24 @@ export default function SegmentationLabeling() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
-  const { jobId } = useLocalSearchParams();
 
   const [paths, setPaths] = useState<PathData[]>([]);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
-  const [isDrawingMode, setIsDrawingMode] = useState(false);
-  const [currentItemId, setCurrentItemId] = useState(0);
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [dataset, setDataset] = useState<any>(null);
 
-  const brushSize = 20; // Fixed brush size
-  const drawColor = colors.tint;
-
-  useEffect(() => {
-    loadDataset();
-  }, []);
-
-  const loadDataset = async () => {
-    try {
-      setLoading(true);
-      const datasetData = await apiService.getDataset(DATASET_NAMES.SEGMENTATION);
-      console.log('📦 Segmentation dataset loaded:', datasetData);
-      setDataset(datasetData);
-
-      if (datasetData.data && datasetData.data.length > 0) {
-        console.log('📥 Loading first segmentation item...');
-        loadItem(datasetData, 0);
-      } else {
-        console.log('⚠️ No data in segmentation dataset');
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Failed to load dataset:', error);
-      // Fallback to mock data
-      setImageUrl('https://picsum.photos/400/300?random=6');
-      setLoading(false);
-    }
-  };
-
-  const loadItem = (datasetData: any, itemId: number) => {
-    console.log('🔄 loadItem called with itemId:', itemId);
-    if (!datasetData || !datasetData.data || !datasetData.data[itemId]) {
-      console.log('❌ No data for item:', itemId);
-      return;
-    }
-
-    const url = apiService.getImageUrl(DATASET_NAMES.SEGMENTATION, itemId);
-    console.log('🖼️ Segmentation image URL:', url);
-    setImageUrl(url);
-    setCurrentItemId(itemId);
-    setPaths([]);
-    setIsDrawingMode(false);
-    setLoading(false);
-    console.log('✅ Segmentation item loaded');
-  };
+  // Hardcoded mock image - drawing is always enabled
+  const imageUrl = 'https://picsum.photos/seed/segmentation/600/400';
+  const brushSize = 20;
+  const drawColor = '#3b82f6'; // Blue color for drawing
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => isDrawingMode,
-      onMoveShouldSetPanResponder: () => isDrawingMode,
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
-        if (!isDrawingMode) return;
         const { locationX, locationY } = evt.nativeEvent;
         setCurrentPath([{ x: locationX, y: locationY }]);
       },
       onPanResponderMove: (evt) => {
-        if (!isDrawingMode) return;
         const { locationX, locationY } = evt.nativeEvent;
         setCurrentPath((prev) => [...prev, { x: locationX, y: locationY }]);
       },
@@ -115,7 +63,6 @@ export default function SegmentationLabeling() {
           ]);
           setCurrentPath([]);
         }
-        // Keep drawing mode active
       },
     })
   ).current;
@@ -130,45 +77,10 @@ export default function SegmentationLabeling() {
     }, '');
   };
 
-  const handleUndo = () => {
-    setPaths((prev) => prev.slice(0, -1));
-  };
-
   const handleClear = () => {
     setPaths([]);
     setCurrentPath([]);
   };
-
-  const handleSubmit = async () => {
-    console.log('Submitting segmentation paths:', paths);
-
-    // TODO: Submit paths to backend when API is ready
-
-    // Move to next item if available
-    if (dataset && currentItemId < dataset.data.length - 1) {
-      console.log(`📥 Loading next segmentation item: ${currentItemId + 1}/${dataset.data.length}`);
-      loadItem(dataset, currentItemId + 1);
-      setIsDrawingMode(false);
-    } else {
-      console.log('🎉 All segmentation items completed!');
-      router.back();
-    }
-  };
-
-  const handleToggleDrawMode = () => {
-    setIsDrawingMode(!isDrawingMode);
-  };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.tint} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>Loading dataset...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -177,7 +89,7 @@ export default function SegmentationLabeling() {
         <Pressable onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Segmentation</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Paint Tool</Text>
         <Pressable onPress={handleClear}>
           <Ionicons name="trash-outline" size={24} color={colors.error} />
         </Pressable>
@@ -186,9 +98,7 @@ export default function SegmentationLabeling() {
       {/* Instructions */}
       <View style={[styles.instructions, { backgroundColor: colors.surfaceSecondary }]}>
         <Text style={[styles.instructionsText, { color: colors.text }]}>
-          {isDrawingMode
-            ? 'Drawing mode active - paint over objects to segment them'
-            : `Tap "Draw Segmentation" to start drawing`}
+          Draw on the image with your finger
         </Text>
       </View>
 
@@ -199,7 +109,6 @@ export default function SegmentationLabeling() {
             source={{ uri: imageUrl }}
             style={styles.image}
             resizeMode="contain"
-            onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
           />
           <Svg style={StyleSheet.absoluteFill}>
             {paths.map((pathData, index) => (
@@ -228,42 +137,6 @@ export default function SegmentationLabeling() {
           </Svg>
         </View>
       </View>
-
-      {/* Progress */}
-      {dataset && (
-        <View style={styles.progressContainer}>
-          <Text style={[styles.progressText, { color: colors.textSecondary }]}>
-            Image {currentItemId + 1} of {dataset.data.length}
-          </Text>
-        </View>
-      )}
-
-      {/* Actions */}
-      <View style={styles.actions}>
-        <Button
-          title={isDrawingMode ? "Stop Drawing" : "Draw Segmentation"}
-          onPress={handleToggleDrawMode}
-          style={{ flex: 1 }}
-          variant={isDrawingMode ? "outline" : "primary"}
-          icon={isDrawingMode ? "stop-circle-outline" : "brush-outline"}
-        />
-      </View>
-
-      <View style={styles.bottomActions}>
-        <Button
-          title="Undo"
-          onPress={handleUndo}
-          variant="outline"
-          style={{ flex: 1 }}
-          disabled={paths.length === 0}
-        />
-        <Button
-          title="Submit"
-          onPress={handleSubmit}
-          style={{ flex: 2 }}
-          disabled={paths.length === 0}
-        />
-      </View>
     </SafeAreaView>
   );
 }
@@ -271,15 +144,6 @@ export default function SegmentationLabeling() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  loadingText: {
-    fontSize: FontSizes.md,
   },
   header: {
     flexDirection: 'row',
@@ -314,21 +178,5 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-  },
-  progressContainer: {
-    alignItems: 'center',
-    paddingVertical: Spacing.sm,
-  },
-  progressText: {
-    fontSize: FontSizes.sm,
-  },
-  actions: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  bottomActions: {
-    flexDirection: 'row',
-    padding: Spacing.md,
-    gap: Spacing.sm,
   },
 });
