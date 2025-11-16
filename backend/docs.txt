@@ -41,9 +41,43 @@ Responses:
 400 Bad Request: {"error": "Unknown label"} or {"error": "Invalid id"}
 404 Not Found: {"error": "Dataset not found"}
 
+GET /textdataset/get?name=[dataset_name]
+Description: Returns the JSON index for a text dataset. Generates an index from the CSV on first access if none exists.
+Query Parameters:
+name – Dataset folder name under ./datasets.
+Responses:
+200 OK: Full text dataset index JSON with `data` array containing `id`, `review`, and `label`.
+404 Not Found: {"error": "Dataset not found"}
+
+GET /textdataset/getitem?name=[dataset_name]&id=[item_id]
+Description: Returns a single text item from the text dataset.
+Query Parameters:
+name – Dataset folder name.
+id – Zero-based item index.
+Responses:
+200 OK: {"id": integer, "review": string, "label": string or null}
+400 Bad Request: {"error": "Invalid id"}
+404 Not Found: {"error": "Dataset not found"}
+
+POST /textdataset/setlabel
+Description: Updates the label of a text dataset entry. Changes are written back to the text dataset’s index JSON.
+Request JSON:
+{
+    "name": "dataset_name",
+    "id": integer,
+    "label": "new_label"
+}
+Responses:
+200 OK: {"status": "ok", "assigned": [new_label]}
+400 Bad Request: {"error": "Invalid id"} or {"error": "Invalid label"}
+404 Not Found: {"error": "Dataset not found"}
+
 Notes: Dataset directories and .json files must be present under DATASET_ROOT.
 Each dataset JSON must contain “categories” (label–value pairs) and “data” (entries with filename and category).
-Category assignment replaces the category field for the specified item.
+Text datasets are expected in ./datasets/[dataset_name]/IMBD_100_Samples.csv.
+Text dataset index JSON is generated automatically on first access under the same folder.
+Category assignment replaces the category field for image dataset items.
+Label assignment replaces the label field for text dataset items.
 Image requests load files from a subfolder named after the dataset.
 Required environment variables include HOSTNAME, PORT, DEBUG, and DATASET_ROOT.
 
@@ -76,4 +110,40 @@ Sample responses:
     { "category": -1, "filename": "6.png",  "id": 9 }
   ],
   "dataset_name": "muffin-vs-chihuahua"
+}
+
+/textdataset/get?name=imdb-movie-review
+{
+  "data": [
+    {
+      "id": 0,
+      "review": "I don't know how or why this film has a meager rating on IMDb...",
+      "label": "positive"
+    },
+    {
+      "id": 1,
+      "review": "For a long time it seemed like all the good Canadian actors had headed south...",
+      "label": "positive"
+    }
+  ]
+}
+
+/textdataset/getitem?name=imdb-movie-review&id=0
+{
+  "id": 0,
+  "review": "I don't know how or why this film has a meager rating on IMDb...",
+  "label": "positive"
+}
+
+/textdataset/setlabel
+Request JSON:
+{
+  "name": "imdb-movie-review",
+  "id": 0,
+  "label": "negative"
+}
+Response:
+{
+  "status": "ok",
+  "assigned": "negative"
 }
