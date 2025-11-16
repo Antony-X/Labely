@@ -1,4 +1,5 @@
 import os
+import csv
 import json
 import flask
 import flask_cors
@@ -8,6 +9,28 @@ dotenv.load_dotenv(dotenv_path=".env")
 
 app = flask.Flask(__name__)
 flask_cors.CORS(app, origins=["*"])
+
+def load_text_index(dataset_name):
+    csv_path = os.path.join(os.getenv("DATASET_ROOT"), dataset_name, "IMBD_100_Samples.csv")
+    index_path = os.path.join(os.getenv("DATASET_ROOT"), dataset_name, "index.json")
+
+    if not os.path.isfile(csv_path):
+        return None, None, "Dataset not found"
+
+    if not os.path.isfile(index_path):
+        rows = []
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for i, r in enumerate(reader):
+                rows.append({
+                    "id": i,
+                    "review": r["review"],
+                    "label": r.get("sentiment", None)
+                })
+        json.dump({"data": rows}, open(index_path, "w"), indent=4)
+
+    index = json.load(open(index_path, "r"))
+    return index, index_path, None
 
 @app.route("/", methods=["GET"])
 def root():
@@ -79,6 +102,52 @@ def dataset_setcat():
     json.dump(indexation, open(json_path, "w"), indent=4)
 
     return flask.jsonify({"status": "ok", "assigned": mapping[label]}), 200
+
+@app.route("/textdataset/get", methods=["GET"])
+def textdataset_get():
+    name = flask.request.args.get("name")
+    index, _, err = load_text_index(name)
+    if err:
+        return flask.jsonify({"error": err}), 404
+    return flask.jsonify(index), 200
+
+
+@app.route("/textdataset/getitem", methods=["GET"])
+def textdataset_getitem():
+    name = flask.request.args.get("name")
+    idx = flask.request.args.get("id", type=int)
+
+    index, _, err = load_text_index(name)
+    if err:
+        return flask.jsonify({"error": err}), 404
+
+    if idx < 0 or idx >= len(index["data"]):
+        return flask.jsonify({"error": "Invalid id"}), 400
+
+    return flask.jsonify(index["data"][idx]), 200
+
+
+@app.route("/textdataset/setlabel", methods=["POST"])
+def textdataset_setlabel():
+    payload = flask.request.get_json(force=True)
+    name = payload.get("name")
+    idx = payload.get("id", None)
+    label = payload.get("label", None)
+
+    index, index_path, err = load_text_index(name)
+    if err:
+        return flask.jsonify({"error": err}), 404
+
+    if not isinstance(idx, int) or idx < 0 or idx >= len(index["data"]):
+        return flask.jsonify({"error": "Invalid id"}), 400
+
+    if not isinstance(label, str) or not label.strip():
+        return flask.jsonify({"error": "Invalid label"}), 400
+
+    index["data"][idx]["label"] = label
+    json.dump(index, open(index_path, "w"), indent=4)
+
+    return flask.jsonify({"status": "ok", "assigned": label}), 200
 
 if __name__ == "__main__":
     app.run(
