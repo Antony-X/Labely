@@ -1,0 +1,57 @@
+{
+    "dataset_name": "multi-class-emotion-classification",
+    "categories": [
+        {
+            "label": "happy",
+            "value": 0
+        },
+        {
+            "label": "sad",
+            "value": 1
+        },
+        {
+            "label": "angry",
+            "value": 2
+        },
+        {
+            "label": "surprised",
+            "value": 3
+        },
+        {
+            "label": "annoyed",
+            "value": 4
+        }
+    ],
+    "data": [
+        {
+            "id": 0,
+            "filename": "0.jpg",
+            "category": -1
+        },
+        {
+            "id": 1,
+            "filename": "2.jpg",
+            "category": -1
+        },
+        {
+            "id": 2,
+            "filename": "5.jpg",
+            "category": -1
+        },
+        {
+            "id": 3,
+            "filename": "1.jpg",
+            "category": -1
+        },
+        {
+            "id": 4,
+            "filename": "3.jpg",
+            "category": -1
+        },
+        {
+            "id": 5,
+            "filename": "4.jpg",
+            "category": -1
+        }
+    ]
+}
