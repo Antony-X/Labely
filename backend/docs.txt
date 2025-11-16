@@ -1,42 +1,39 @@
 Base URL: http://[HOSTNAME]:[PORT]
 
----
-
 GET /
-Description: Returns the contents of docs.txt for basic service confirmation.
-Response: HTML-wrapped documentation text.
+Description: Returns the raw contents of docs.txt for verification of service availability.
+Response: HTML-wrapped text from docs.txt.
 Status: 200 OK
 
----
+GET /dataset/list
+Description: Lists all available datasets located in DATASET_ROOT. Only files ending in .json are considered valid datasets; their extensions are removed before returning.
+Response: JSON array of dataset names.
+Status: 200 OK
 
 GET /dataset/get?name=[dataset_name]
-Description: Retrieves the full JSON indexation file for a dataset.
+Description: Returns the JSON indexation file for the specified dataset. The name must match a .json file inside DATASET_ROOT.
 Query Parameters:
-name – Name of the dataset (without .json extension).
+name – Dataset name without extension.
 Responses:
-200 OK: Returns the dataset JSON.
+200 OK: Full dataset JSON.
 404 Not Found: {"error": "Dataset \"[name]\" not found."}
 
----
-
 GET /dataset/getimg?name=[dataset_name]&id=[item_id]
-Description: Serves an image belonging to a dataset item.
+Description: Returns an image associated with the given dataset item. The function validates dataset existence, item index bounds, and file availability.
 Query Parameters:
 name – Dataset name.
-id – Integer index of the item.
+id – Zero-based item index.
 Responses:
-200 OK: Returns the image file with mimetype image/jpeg.
+200 OK: Image file with JPEG mimetype.
 400 Bad Request: {"error": "Invalid id"}
 404 Not Found: {"error": "Dataset not found"} or {"error": "Image not found"}
 
----
-
 POST /dataset/setcat
-Description: Assigns a category to a dataset item.
+Description: Updates the category value for a dataset entry. The category label must exist in the dataset’s category mapping. Changes are written back to the dataset’s JSON file.
 Request JSON:
 {
     "name": "dataset_name",
-    "id": 0,
+    "id": integer,
     "label": "category_label"
 }
 Responses:
@@ -44,11 +41,39 @@ Responses:
 400 Bad Request: {"error": "Unknown label"} or {"error": "Invalid id"}
 404 Not Found: {"error": "Dataset not found"}
 
----
+Notes: Dataset directories and .json files must be present under DATASET_ROOT.
+Each dataset JSON must contain “categories” (label–value pairs) and “data” (entries with filename and category).
+Category assignment replaces the category field for the specified item.
+Image requests load files from a subfolder named after the dataset.
+Required environment variables include HOSTNAME, PORT, DEBUG, and DATASET_ROOT.
 
-Notes:
-* Dataset files must exist within DATASET_ROOT.
-* Dataset JSON must contain "categories" and "data" fields.
-* Category assignment maps human-readable labels to integer values.
-* Returned images are read directly from dataset-specific subdirectories.
-* Environment variables must define HOSTNAME, PORT, DEBUG, DATASET_ROOT.
+Sample responses:
+
+/dataset/list
+[
+  "fruit-dataset",
+  "muffin-vs-chihuahua",
+  "multi-class-emotion-classification",
+  "animals-or-else"
+]
+
+/dataset/get?name=muffin-vs-chihuahua
+{
+  "categories": [
+    { "label": "muffin", "value": 0 },
+    { "label": "chihuahua", "value": 1 }
+  ],
+  "data": [
+    { "category": -1, "filename": "5.png",  "id": 0 },
+    { "category": -1, "filename": "2.png",  "id": 1 },
+    { "category": -1, "filename": "7.png",  "id": 2 },
+    { "category": -1, "filename": "4.png",  "id": 3 },
+    { "category": -1, "filename": "0.png",  "id": 4 },
+    { "category": -1, "filename": "9.png",  "id": 5 },
+    { "category": -1, "filename": "10.png", "id": 6 },
+    { "category": -1, "filename": "1.png",  "id": 7 },
+    { "category": -1, "filename": "8.png",  "id": 8 },
+    { "category": -1, "filename": "6.png",  "id": 9 }
+  ],
+  "dataset_name": "muffin-vs-chihuahua"
+}
