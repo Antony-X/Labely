@@ -26,7 +26,6 @@ interface Point {
 interface PathData {
   points: Point[];
   color: string;
-  class: string;
 }
 
 export default function SegmentationLabeling() {
@@ -35,30 +34,25 @@ export default function SegmentationLabeling() {
   const router = useRouter();
   const { jobId } = useLocalSearchParams();
 
-  const [currentClass, setCurrentClass] = useState('Cat');
   const [paths, setPaths] = useState<PathData[]>([]);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
   const [brushSize, setBrushSize] = useState(20);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
 
   const imageUrl = 'https://picsum.photos/400/300?random=6';
-  const classes = ['Cat', 'Dog', 'Bird', 'Background'];
-
-  const classColors: { [key: string]: string } = {
-    'Cat': '#FF6B6B',
-    'Dog': '#4ECDC4',
-    'Bird': '#45B7D1',
-    'Background': '#95E1D3',
-  };
+  const drawColor = colors.tint;
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => isDrawingMode,
+      onMoveShouldSetPanResponder: () => isDrawingMode,
       onPanResponderGrant: (evt) => {
+        if (!isDrawingMode) return;
         const { locationX, locationY } = evt.nativeEvent;
         setCurrentPath([{ x: locationX, y: locationY }]);
       },
       onPanResponderMove: (evt) => {
+        if (!isDrawingMode) return;
         const { locationX, locationY } = evt.nativeEvent;
         setCurrentPath((prev) => [...prev, { x: locationX, y: locationY }]);
       },
@@ -68,12 +62,12 @@ export default function SegmentationLabeling() {
             ...prev,
             {
               points: currentPath,
-              color: classColors[currentClass],
-              class: currentClass,
+              color: drawColor,
             },
           ]);
           setCurrentPath([]);
         }
+        setIsDrawingMode(false);
       },
     })
   ).current;
@@ -98,9 +92,12 @@ export default function SegmentationLabeling() {
   };
 
   const handleSubmit = () => {
-    // Submit the segmentation data
     console.log('Submitting paths:', paths);
     router.back();
+  };
+
+  const handleDrawMode = () => {
+    setIsDrawingMode(true);
   };
 
   return (
@@ -119,7 +116,9 @@ export default function SegmentationLabeling() {
       {/* Instructions */}
       <View style={[styles.instructions, { backgroundColor: colors.surfaceSecondary }]}>
         <Text style={[styles.instructionsText, { color: colors.text }]}>
-          Paint over objects to segment them. Select a class below and draw.
+          {isDrawingMode
+            ? 'Paint over objects to segment them'
+            : `Tap "Draw Segmentation" to start drawing`}
         </Text>
       </View>
 
@@ -143,7 +142,7 @@ export default function SegmentationLabeling() {
             {currentPath.length > 0 && (
               <Path
                 d={pathToString(currentPath)}
-                stroke={classColors[currentClass]}
+                stroke={drawColor}
                 strokeWidth={brushSize}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -152,38 +151,6 @@ export default function SegmentationLabeling() {
               />
             )}
           </Svg>
-        </View>
-      </View>
-
-      {/* Class Selector */}
-      <View style={styles.classSelector}>
-        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-          Select Class:
-        </Text>
-        <View style={styles.classButtons}>
-          {classes.map((cls) => (
-            <Pressable
-              key={cls}
-              onPress={() => setCurrentClass(cls)}
-              style={[
-                styles.classButton,
-                {
-                  backgroundColor: currentClass === cls ? classColors[cls] : colors.surface,
-                  borderColor: classColors[cls],
-                },
-              ]}
-            >
-              <View style={[styles.colorDot, { backgroundColor: classColors[cls] }]} />
-              <Text
-                style={[
-                  styles.classButtonText,
-                  { color: currentClass === cls ? '#fff' : colors.text },
-                ]}
-              >
-                {cls}
-              </Text>
-            </Pressable>
-          ))}
         </View>
       </View>
 
@@ -214,6 +181,25 @@ export default function SegmentationLabeling() {
 
       {/* Actions */}
       <View style={styles.actions}>
+        {!isDrawingMode && (
+          <Button
+            title="Draw Segmentation"
+            onPress={handleDrawMode}
+            style={{ flex: 1 }}
+            icon="brush-outline"
+          />
+        )}
+        {isDrawingMode && (
+          <View style={styles.drawingModeIndicator}>
+            <Ionicons name="hand-left" size={24} color={colors.tint} />
+            <Text style={[styles.drawingModeText, { color: colors.tint }]}>
+              Drawing mode active - paint on image
+            </Text>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.bottomActions}>
         <Button
           title="Undo"
           onPress={handleUndo}
@@ -270,7 +256,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  classSelector: {
+  brushControl: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
@@ -278,33 +264,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: '600',
     marginBottom: Spacing.sm,
-  },
-  classButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  classButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 2,
-    gap: Spacing.xs,
-  },
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  classButtonText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
-  brushControl: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
   },
   brushSizes: {
     flexDirection: 'row',
@@ -321,6 +280,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actions: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  drawingModeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+  },
+  drawingModeText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  bottomActions: {
     flexDirection: 'row',
     padding: Spacing.md,
     gap: Spacing.sm,

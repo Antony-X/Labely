@@ -7,6 +7,8 @@ import {
   Pressable,
   Dimensions,
   Animated,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -17,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
-const CARD_HEIGHT = height * 0.55;
+const CARD_HEIGHT = height * 0.45;
 
 export default function MultiClassLabeling() {
   const colorScheme = useColorScheme();
@@ -26,6 +28,7 @@ export default function MultiClassLabeling() {
   const { jobId } = useLocalSearchParams();
 
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [customClass, setCustomClass] = useState('');
   const [cardAnimation] = useState(new Animated.Value(0));
 
   const imageUrl = 'https://picsum.photos/400/300?random=3';
@@ -33,6 +36,16 @@ export default function MultiClassLabeling() {
 
   const handleSelect = (className: string) => {
     setSelectedClass(className);
+    setCustomClass(''); // Clear custom input when selecting predefined class
+  };
+
+  const handleCustomInput = (text: string) => {
+    setCustomClass(text);
+    if (text.trim()) {
+      setSelectedClass(text.trim());
+    } else {
+      setSelectedClass(null);
+    }
   };
 
   const handleSubmit = () => {
@@ -45,7 +58,6 @@ export default function MultiClassLabeling() {
       useNativeDriver: true,
     }).start(() => {
       console.log('Selected class:', selectedClass);
-      // In real app, load next task or go back
       router.back();
     });
   };
@@ -74,63 +86,83 @@ export default function MultiClassLabeling() {
       {/* Instructions */}
       <View style={[styles.instructions, { backgroundColor: colors.surfaceSecondary }]}>
         <Text style={[styles.instructionsText, { color: colors.text }]}>
-          Select the category that best describes this image
+          Select a category or type your own
         </Text>
       </View>
 
-      {/* Card */}
-      <View style={styles.cardContainer}>
-        <Animated.View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-              transform: [{ translateY: cardTranslateY }],
-              opacity: cardOpacity,
-            },
-          ]}
-        >
-          <Image source={{ uri: imageUrl }} style={styles.image} />
-          <View style={styles.cardInfo}>
-            <Text style={[styles.taskLabel, { color: colors.textSecondary }]}>
-              What category is this?
-            </Text>
-            <Text style={[styles.rewardLabel, { color: colors.success }]}>
-              +$0.08 per label
-            </Text>
-          </View>
-        </Animated.View>
-      </View>
-
-      {/* Class Buttons */}
-      <View style={styles.classButtons}>
-        {classes.map((cls) => (
-          <Pressable
-            key={cls}
-            onPress={() => handleSelect(cls)}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Card */}
+        <View style={styles.cardContainer}>
+          <Animated.View
             style={[
-              styles.classButton,
+              styles.card,
               {
-                backgroundColor: selectedClass === cls ? colors.tint : colors.surface,
-                borderColor: selectedClass === cls ? colors.tint : colors.border,
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                transform: [{ translateY: cardTranslateY }],
+                opacity: cardOpacity,
               },
             ]}
           >
-            <Text
+            <Image source={{ uri: imageUrl }} style={styles.image} />
+            <View style={styles.cardInfo}>
+              <Text style={styles.taskLabel}>
+                What category is this?
+              </Text>
+              <Text style={styles.rewardLabel}>
+                +$0.08
+              </Text>
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* Class Buttons */}
+        <View style={styles.classButtons}>
+          {classes.map((cls) => (
+            <Pressable
+              key={cls}
+              onPress={() => handleSelect(cls)}
               style={[
-                styles.classButtonText,
-                { color: selectedClass === cls ? '#fff' : colors.text },
+                styles.classButton,
+                {
+                  backgroundColor: selectedClass === cls ? colors.tint : colors.surface,
+                  borderColor: selectedClass === cls ? colors.tint : colors.border,
+                },
               ]}
             >
-              {cls}
-            </Text>
-            {selectedClass === cls && (
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
-            )}
-          </Pressable>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.classButtonText,
+                  { color: selectedClass === cls ? '#fff' : colors.text },
+                ]}
+              >
+                {cls}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Custom Input */}
+        <View style={styles.customInputContainer}>
+          <Text style={[styles.customLabel, { color: colors.textSecondary }]}>
+            Or type your own class:
+          </Text>
+          <TextInput
+            style={[
+              styles.customInput,
+              {
+                backgroundColor: colors.surface,
+                borderColor: customClass ? colors.tint : colors.border,
+                color: colors.text,
+              },
+            ]}
+            placeholder="Type class name..."
+            placeholderTextColor={colors.textSecondary}
+            value={customClass}
+            onChangeText={handleCustomInput}
+          />
+        </View>
+      </ScrollView>
 
       {/* Actions */}
       <View style={styles.actions}>
@@ -173,11 +205,14 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     textAlign: 'center',
   },
+  scrollContent: {
+    paddingBottom: Spacing.md,
+  },
   cardContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
+    paddingVertical: Spacing.md,
   },
   card: {
     width: CARD_WIDTH,
@@ -218,25 +253,39 @@ const styles = StyleSheet.create({
   },
   classButtons: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
   },
   classButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
     borderWidth: 2,
-    gap: Spacing.xs,
-    minWidth: '48%',
+    width: '31%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   classButtonText: {
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: '600',
+  },
+  customInputContainer: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  customLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  customInput: {
+    borderWidth: 2,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    fontSize: FontSizes.md,
   },
   actions: {
     flexDirection: 'row',
